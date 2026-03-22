@@ -869,7 +869,7 @@ Conditionally mount verify-email and resend-verification routes when `config.ema
 ---
 
 ## Phase 12: Google OAuth
-`[ ]` **Status: Not Started**
+`[x]` **Status: Complete** ✅
 
 ### Goal
 Implement Google OAuth 2.0 Authorization Code flow with PKCE.

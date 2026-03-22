@@ -223,7 +223,7 @@ export interface LoginHistoryDocument extends Document {
  */
 export interface CreateUserDto {
   email: string;
-  passwordHash: string;
+  passwordHash?: string;  // Optional for Google OAuth-only users
   username?: string;
   fullName?: string;
   firstName?: string;

@@ -15,6 +15,8 @@ import { EmailService } from '../../services/email.service.js';
 import { createAuthController } from '../controllers/auth.controller.js';
 import { createPasswordController } from '../controllers/password.controller.js';
 import { createVerificationController } from '../controllers/verification.controller.js';
+import { createOAuthController } from '../controllers/oauth.controller.js';
+import { OAuthService } from '../../services/oauth.service.js';
 import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
 import type { ISessionRepository } from '../../repositories/interfaces/session.repository.interface.js';
 import { createRequireAuth } from '../middleware/authenticate.js';
@@ -45,6 +47,8 @@ export interface AuthRouterDeps {
   emailService?: EmailService;
   userRepository?: IUserRepository;
   sessionRepository?: ISessionRepository;
+  // Optional — provided when Google OAuth is enabled
+  oauthService?: OAuthService;
 }
 
 /**
@@ -199,10 +203,26 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   }
 
   // -----------------------------------------------------------------------
+  // Conditional: Google OAuth
+  // -----------------------------------------------------------------------
+
+  if (config.login.allowGoogleOAuth && deps.oauthService) {
+    const oauthController = createOAuthController({
+      oauthService: deps.oauthService,
+      config,
+    });
+
+    // GET /auth/google — redirect to Google
+    router.get('/google', oauthController.redirect);
+
+    // GET /auth/google/callback — handle Google's redirect back
+    router.get('/google/callback', oauthController.callback);
+  }
+
+  // -----------------------------------------------------------------------
   // Conditional routes — mounted in later phases
-  // Phase 12+: Google OAuth, session management, login history
+  // Phase 13+: Session management, login history
   // -----------------------------------------------------------------------
 
   return router;
 }
-

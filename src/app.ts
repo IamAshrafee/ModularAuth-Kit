@@ -18,6 +18,7 @@ import { MongoTokenRepository } from './auth/repositories/mongodb/token.reposito
 import { MongoLoginHistoryRepository } from './auth/repositories/mongodb/login-history.repository.js';
 import { ConsoleEmailAdapter } from './auth/adapters/email/console.adapter.js';
 import { NodemailerEmailAdapter } from './auth/adapters/email/nodemailer.adapter.js';
+import { OAuthService } from './auth/services/oauth.service.js';
 import { createAuthRouter } from './auth/http/routes/auth.routes.js';
 import { setupSecurity } from './auth/http/middleware/security.js';
 import { AuthError } from './auth/errors/auth-error.js';
@@ -89,6 +90,12 @@ export function createApp(config: AuthConfig) {
     emailService,
   });
 
+  // OAuth service (only used when Google OAuth is enabled)
+  const oauthService = new OAuthService({
+    userRepository,
+    sessionRepository,
+  });
+
   // -----------------------------------------------------------------------
   // Mount auth routes at /auth
   // -----------------------------------------------------------------------
@@ -101,6 +108,7 @@ export function createApp(config: AuthConfig) {
     emailService,
     userRepository,
     sessionRepository,
+    oauthService,
   });
 
   app.use('/auth', authRouter);
