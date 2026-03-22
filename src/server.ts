@@ -35,6 +35,9 @@ async function bootstrap(): Promise<void> {
     loginHistory: {
       enabled: true, // Enable for development testing
     },
+    sessionManagement: {
+      enabled: true, // Enable for development testing
+    },
   });
 
   // 2. Connect to MongoDB

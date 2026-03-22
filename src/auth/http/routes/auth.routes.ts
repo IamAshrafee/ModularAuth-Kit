@@ -17,6 +17,7 @@ import { createPasswordController } from '../controllers/password.controller.js'
 import { createVerificationController } from '../controllers/verification.controller.js';
 import { createOAuthController } from '../controllers/oauth.controller.js';
 import { createHistoryController } from '../controllers/history.controller.js';
+import { createSessionController } from '../controllers/session.controller.js';
 import { OAuthService } from '../../services/oauth.service.js';
 import { LoginHistoryService } from '../../services/login-history.service.js';
 import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
@@ -237,9 +238,21 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   }
 
   // -----------------------------------------------------------------------
-  // Conditional routes — mounted in later phases
-  // Phase 14+: Session management
+  // Conditional: Session Management
   // -----------------------------------------------------------------------
+
+  if (config.sessionManagement.enabled) {
+    const sessionController = createSessionController({
+      sessionService: deps.sessionService,
+      config,
+    });
+
+    // GET /auth/sessions
+    router.get('/sessions', requireAuth, sessionController.listSessions);
+
+    // DELETE /auth/sessions/:id
+    router.delete('/sessions/:id', requireAuth, sessionController.revokeSession);
+  }
 
   return router;
 }

@@ -959,7 +959,7 @@ Conditionally mount login-history route when `config.loginHistory.enabled`.
 ---
 
 ## Phase 14: Session/Device Management
-`[ ]` **Status: Not Started**
+`[x]` **Status: Complete** ✅
 
 ### Goal
 Allow users to see active sessions/devices and revoke specific ones.
