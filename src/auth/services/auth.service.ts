@@ -17,6 +17,8 @@ import type {
 import type { IUserRepository } from '../repositories/interfaces/user.repository.interface.js';
 import type { ISessionRepository } from '../repositories/interfaces/session.repository.interface.js';
 import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
+import type { TokenService } from './token.service.js';
+import type { EmailService } from './email.service.js';
 import { AuthError } from '../errors/auth-error.js';
 import { ValidationError } from '../errors/validation-error.js';
 import { NotFoundError } from '../errors/not-found-error.js';
@@ -34,6 +36,8 @@ interface AuthServiceDeps {
   userRepository: IUserRepository;
   sessionRepository: ISessionRepository;
   loginHistoryRepository?: ILoginHistoryRepository;
+  tokenService?: TokenService;
+  emailService?: EmailService;
 }
 
 // ============================================================================
@@ -44,11 +48,15 @@ export class AuthService {
   private readonly userRepo: IUserRepository;
   private readonly sessionRepo: ISessionRepository;
   private readonly loginHistoryRepo?: ILoginHistoryRepository;
+  private readonly tokenService?: TokenService;
+  private readonly emailService?: EmailService;
 
   constructor(deps: AuthServiceDeps) {
     this.userRepo = deps.userRepository;
     this.sessionRepo = deps.sessionRepository;
     this.loginHistoryRepo = deps.loginHistoryRepository;
+    this.tokenService = deps.tokenService;
+    this.emailService = deps.emailService;
   }
 
   // --------------------------------------------------------------------------
@@ -123,7 +131,20 @@ export class AuthService {
       config,
     );
 
-    // 8. Record login history (if enabled)
+    // 8. Send verification email (if enabled)
+    if (
+      config.emailVerification.enabled &&
+      this.tokenService &&
+      this.emailService
+    ) {
+      const code = await this.tokenService.generateVerificationCode(
+        user._id.toString(),
+        config,
+      );
+      await this.emailService.sendVerification(email, code, config);
+    }
+
+    // 9. Record login history (if enabled)
     if (config.loginHistory.enabled && this.loginHistoryRepo) {
       await this.recordHistory({
         userId: user._id.toString(),

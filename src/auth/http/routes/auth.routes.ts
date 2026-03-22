@@ -14,6 +14,7 @@ import { TokenService } from '../../services/token.service.js';
 import { EmailService } from '../../services/email.service.js';
 import { createAuthController } from '../controllers/auth.controller.js';
 import { createPasswordController } from '../controllers/password.controller.js';
+import { createVerificationController } from '../controllers/verification.controller.js';
 import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
 import type { ISessionRepository } from '../../repositories/interfaces/session.repository.interface.js';
 import { createRequireAuth } from '../middleware/authenticate.js';
@@ -29,6 +30,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from '../schemas/password.schemas.js';
+import { verifyEmailSchema } from '../schemas/verification.schemas.js';
 
 // ============================================================================
 // Route Factory
@@ -163,10 +165,44 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   }
 
   // -----------------------------------------------------------------------
+  // Conditional: Email Verification
+  // -----------------------------------------------------------------------
+
+  if (
+    config.emailVerification.enabled &&
+    deps.tokenService &&
+    deps.emailService &&
+    deps.userRepository
+  ) {
+    const verificationController = createVerificationController({
+      tokenService: deps.tokenService,
+      emailService: deps.emailService,
+      userRepository: deps.userRepository,
+      config,
+    });
+
+    // POST /auth/verify-email
+    router.post(
+      '/verify-email',
+      requireAuth,
+      validate(verifyEmailSchema),
+      verificationController.verifyEmail,
+    );
+
+    // POST /auth/resend-verification
+    router.post(
+      '/resend-verification',
+      requireAuth,
+      createRateLimiter(config, 'forgotPassword'),
+      verificationController.resendVerification,
+    );
+  }
+
+  // -----------------------------------------------------------------------
   // Conditional routes — mounted in later phases
-  // Phase 11+: Email verification, Google OAuth, session management,
-  //            login history
+  // Phase 12+: Google OAuth, session management, login history
   // -----------------------------------------------------------------------
 
   return router;
 }
+

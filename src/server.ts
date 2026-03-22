@@ -29,6 +29,9 @@ async function bootstrap(): Promise<void> {
     passwordRecovery: {
       enabled: true, // Enable for development testing
     },
+    emailVerification: {
+      enabled: true, // Enable for development testing
+    },
   });
 
   // 2. Connect to MongoDB

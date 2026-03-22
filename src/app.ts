@@ -72,12 +72,6 @@ export function createApp(config: AuthConfig) {
     userRepository,
   });
 
-  const authService = new AuthService({
-    userRepository,
-    sessionRepository,
-    loginHistoryRepository,
-  });
-
   const tokenService = new TokenService({ tokenRepository });
 
   // Email adapter — console for dev, nodemailer for prod
@@ -86,6 +80,14 @@ export function createApp(config: AuthConfig) {
     : new ConsoleEmailAdapter();
 
   const emailService = new EmailService(emailAdapter);
+
+  const authService = new AuthService({
+    userRepository,
+    sessionRepository,
+    loginHistoryRepository,
+    tokenService,
+    emailService,
+  });
 
   // -----------------------------------------------------------------------
   // Mount auth routes at /auth
