@@ -565,7 +565,7 @@ None in this phase (internal middleware).
 ---
 
 ## Phase 8: HTTP Layer — Auth Controllers & Routes
-`[ ]` **Status: Not Started**
+`[x]` **Status: Complete** ✅
 
 ### Goal
 Create controllers for core auth endpoints (register, login, logout, profile, change-password) and the route definitions.
