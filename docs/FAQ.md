@@ -25,6 +25,25 @@ app.use('/auth', createAuthModule(config));
 
 Yes! We provide a ready-made prompt that AI agents can follow to integrate ModularAuth-Kit into your project automatically. See [AI-Assisted Integration](ai-integration/agent-prompt.md).
 
+### What platforms/frameworks does this work with?
+
+ModularAuth-Kit is built for **Express.js + MongoDB + TypeScript**. Here's the full compatibility:
+
+| Platform | Works? | Notes |
+|---|---|---|
+| **Express.js 4.x / 5.x** | ✅ Yes | Built for this |
+| **NestJS** | ⚠️ Partial | Can mount as raw Express middleware, but fights NestJS patterns |
+| **Next.js (API Routes)** | ❌ No | Different request/response model |
+| **Next.js (custom Express server)** | ⚠️ Maybe | Uncommon setup, but possible |
+| **Fastify / Hono / Koa** | ❌ No | Different middleware APIs |
+| **Python / Go / Other** | ❌ No | TypeScript + Node.js only |
+
+**Why?** The module uses Express Router, `(req, res, next)` middleware, `cookie-parser`, and Mongoose. These are Express-specific APIs.
+
+### Can I use this with a different database (PostgreSQL, MySQL)?
+
+Not out of the box. The module uses Mongoose (MongoDB). However, the **repository pattern** makes it possible to swap databases — you'd implement the repository interfaces (`IUserRepository`, `ISessionRepository`, etc.) with your SQL queries. See [Custom Database](guides/custom-database.md).
+
 ---
 
 ## Setup & Configuration

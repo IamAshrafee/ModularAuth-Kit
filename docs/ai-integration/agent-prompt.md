@@ -9,9 +9,35 @@
 
 You are integrating **ModularAuth-Kit** — a pre-built authentication module — into the user's existing (or new) project. The `src/auth/` folder has already been copied into their project.
 
-**Your approach must be: Learn First → Ask Smart Questions → Integrate → Verify.**
+**Your approach must be: Check Compatibility → Learn First → Ask Smart Questions → Integrate → Verify.**
 
 Never assume anything about the project. Discover everything by reading files.
+
+---
+
+## Phase 0: Compatibility Check (STOP HERE If Incompatible)
+
+Before doing anything else, verify the project is compatible.
+
+### Read `package.json` and check:
+
+1. **Is this a Node.js project?** (has `package.json` with dependencies)
+2. **Does it use Express.js?** (has `express` in dependencies)
+3. **Does it use MongoDB/Mongoose?** (has `mongoose` in dependencies, or will need it)
+
+### Immediately STOP and tell the user if:
+
+| Found | What to Say |
+|---|---|
+| **No `package.json`** | "This doesn't appear to be a Node.js project. ModularAuth-Kit requires Node.js + Express.js + MongoDB." |
+| **Next.js** (`next` in deps) | "ModularAuth-Kit is built for Express.js and isn't compatible with Next.js API routes. You'd need an Express-based auth solution for Next.js (e.g., NextAuth.js)." |
+| **NestJS** (`@nestjs/core` in deps) | "ModularAuth-Kit is built for Express.js. While NestJS uses Express under the hood, the module doesn't follow NestJS patterns (decorators, guards, modules). Integration is possible but not recommended. Do you want to proceed anyway?" |
+| **Fastify** (`fastify` in deps) | "ModularAuth-Kit is built for Express.js and isn't compatible with Fastify's middleware system." |
+| **Hono** (`hono` in deps) | "ModularAuth-Kit is built for Express.js and isn't compatible with Hono." |
+| **No Express** (no `express` in deps) | "I don't see Express.js in your dependencies. ModularAuth-Kit requires Express.js. Would you like me to install Express and set up a basic server first?" |
+| **Python/Go/Other** (no `package.json`) | "ModularAuth-Kit is a TypeScript module for Node.js + Express.js. It can't be used with [language] projects." |
+
+### If compatible, proceed to Phase 1.
 
 ---
 
