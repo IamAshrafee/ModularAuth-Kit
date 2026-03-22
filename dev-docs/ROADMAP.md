@@ -68,6 +68,26 @@ Mark phases as you go:
 - `[/]` In progress
 - `[x]` Complete + verified
 
+### Skills Reference
+
+The `.agents/skills/` directory contains 11 installed skills that provide patterns and best practices. **Before implementing a phase, read the relevant skill(s)** for that phase's domain:
+
+| Skill | What It Provides | Use In Phases |
+|---|---|---|
+| **`typescript-expert`** | Strict mode, module resolution, advanced patterns, error classes | All phases (always consult) |
+| **`typescript-advanced-types`** | Generics, conditional types, mapped types, utility types | 1 (config types), 2 (error types), 5 (service types) |
+| **`nodejs-best-practices`** | Architecture layers, async patterns, validation, security mindset | 1, 2, 5, 7, 17 |
+| **`express-rest-api`** | Routing, middleware, error handling, project structure | 7, 8, 9, 17 |
+| **`mongodb`** | Schema design, indexes, TTL, aggregation, transactions | 3, 13, 14 |
+| **`mongoose-mongodb`** | Mongoose ODM: schemas, hooks, virtuals, population | 3, 13, 14 |
+| **`zod-schema-validation`** | Schema composition, safe parsing, transforms, error formatting | 1 (config), 5 (request schemas), 7 (validation middleware) |
+| **`api-design`** | REST conventions, status codes, response format, pagination | 8, 9, 10, 11, 12, 13, 14 |
+| **`security-best-practices`** | Helmet, rate limiting, CORS, CSRF, secret management | 6, 7, 15, 16, 19 |
+| **`owasp-security`** | OWASP Top 10 patterns: injection, auth, crypto, SSRF, XSS | 4 (password hashing), 6 (sessions), 10 (tokens), 15 (lockout) |
+| **`owasp-security-check`** | Security audit: 20 rules across 5 categories, severity levels | 19 (final security review), 16 (audit logging) |
+
+> 💡 **How to use:** Before starting a phase, look at the "Use In Phases" column. Read the SKILL.md for each listed skill. Apply its patterns and checklists to your implementation.
+
 ---
 
 ## Phase 1: Foundation & Config System
