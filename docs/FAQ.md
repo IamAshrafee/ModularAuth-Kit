@@ -31,11 +31,17 @@ Yes! We provide a ready-made prompt that AI agents can follow to integrate Modul
 
 ### Why does the server crash on startup with "Missing required: SESSION_SECRET"?
 
-You haven't set the `SESSION_SECRET` environment variable. Create a `.env` file:
+You haven't set the `SESSION_SECRET` environment variable. Add one line to your existing `.env`:
 
 ```bash
 SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 ```
+
+This is the **only required env var**. You don't need to set `MONGODB_URI` again — the auth module reuses your existing Mongoose connection.
+
+### Do I need to set up a separate MongoDB connection?
+
+**No.** If your project already calls `mongoose.connect()`, the auth module automatically uses that connection. No `connectDatabase()` call, no `MONGODB_URI` duplication. Just mount the module and it works.
 
 ### How do I disable HTTPS for local development?
 

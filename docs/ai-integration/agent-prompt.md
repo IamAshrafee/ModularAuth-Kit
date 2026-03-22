@@ -110,21 +110,16 @@ npm install -D @types/nodemailer
 
 ## Step 4: Create/Update .env
 
-Create or update the `.env` file with the collected values:
+Add the following to the user's **existing** `.env` file. Do NOT create a separate env file:
 
 ```bash
-# Database
-MONGODB_URI=<user's mongodb connection string>
-
-# Session
+# Session (always required — the only truly new env var)
 SESSION_SECRET=<generate a random 64-character hex string>
-
-# Server
-PORT=3000
-NODE_ENV=development
 ```
 
-Add feature-specific variables based on user's answers:
+> **Important:** Do NOT add `MONGODB_URI` if the project already has it. The auth module reuses the active Mongoose connection automatically.
+
+Add feature-specific variables ONLY if enabled by the user:
 
 ```bash
 # If Google OAuth enabled:

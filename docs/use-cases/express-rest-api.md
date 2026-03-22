@@ -20,55 +20,46 @@ my-api/
 └── tsconfig.json
 ```
 
-## Step 1: Install Dependencies
+## Step 1: Install Missing Dependencies
+
+You likely already have `express` and `mongoose`. Install only what's missing:
 
 ```bash
-npm install express mongoose argon2 helmet cookie-parser zod dotenv
-npm install -D typescript @types/express @types/cookie-parser tsx
+npm install argon2 helmet cookie-parser zod      # skip any you already have
 ```
 
-## Step 2: Environment Variables
+## Step 2: Add SESSION_SECRET to Your .env
+
+Add one line to your **existing** `.env` file:
 
 ```bash
-# .env
-MONGODB_URI=mongodb://localhost:27017/myapi
 SESSION_SECRET=your-random-64-char-secret-here
-PORT=3000
 ```
 
-## Step 3: Configure Auth
+> 💡 That's the only new env var needed. Your existing `MONGODB_URI` is already handled — the auth module reuses whatever Mongoose connection your project has.
+
+## Step 3: Mount Auth (Add to Your Existing App)
+
+Add 3 lines to your existing Express setup:
 
 ```typescript
-// src/server.ts
-import 'dotenv/config';
-import express from 'express';
+// In your existing app.ts or server.ts
 import { createConfig, createAuthModule } from './auth/index.js';
-import { connectDatabase } from './auth/adapters/database/mongodb.adapter.js';
 
-async function bootstrap() {
-  await connectDatabase(process.env.MONGODB_URI!);
+// After your existing mongoose.connect() and app.use(express.json())...
+const config = createConfig({
+  session: { secure: false }, // Set true in production with HTTPS
+});
 
-  const app = express();
-  app.use(express.json());
+app.use('/auth', createAuthModule(config));
 
-  // Auth config — enable only what you need
-  const config = createConfig({
-    session: { secure: false }, // Set true in production with HTTPS
-  });
-
-  // Mount auth at /auth
-  app.use('/auth', createAuthModule(config));
-
-  // Your business routes (protected)
-  app.get('/api/products', (req, res) => {
-    res.json({ products: [] });
-  });
-
-  app.listen(3000, () => console.log('Running on :3000'));
-}
-
-bootstrap();
+// Your existing routes continue to work as before
+app.get('/api/products', (req, res) => {
+  res.json({ products: [] });
+});
 ```
+
+> ⚠️ **No need to call `connectDatabase()`** if you already have `mongoose.connect()` in your project. The auth module automatically uses your active Mongoose connection.
 
 ## Step 4: Protect Your Routes
 

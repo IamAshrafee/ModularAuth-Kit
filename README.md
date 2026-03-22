@@ -35,40 +35,50 @@ The AI agent will:
 
 ## Quick Start
 
-### 1. Install
+### Adding to an Existing Project
+
+Already have an Express + MongoDB project? **3 steps:**
+
+**1. Copy & Install**
+```bash
+# Copy src/auth/ into your project, then:
+npm install argon2 zod helmet cookie-parser    # skip any you already have
+```
+
+**2. Add `SESSION_SECRET` to your existing `.env`**
+```bash
+SESSION_SECRET=your-random-64-char-secret-here
+```
+
+**3. Mount (2 lines in your existing app)**
+```typescript
+import { createConfig, createAuthModule } from './auth/index.js';
+
+const config = createConfig({ session: { secure: false } }); // secure:true in prod
+app.use('/auth', createAuthModule(config));
+```
+
+**That's it.** Your existing MongoDB connection is reused automatically. No extra DB setup needed.
+
+> 💡 **Already have `mongoose.connect()` in your project?** The auth module piggybacks on it — it uses whatever Mongoose connection is already active. You don't need to call `connectDatabase()` or set `MONGODB_URI` again.
+
+---
+
+### Starting a New Project
+
+If this is a brand-new project, you also need MongoDB:
 
 ```bash
-npm install
-cp .env.example .env
+npm install express mongoose dotenv
 ```
 
-### 2. Configure
-
 ```typescript
-import { createConfig, createAuthModule } from './auth';
+// server.ts
+import 'dotenv/config';
+import mongoose from 'mongoose';
 
-const config = createConfig({
-  session: { secure: false },           // false for HTTP dev
-  passwordRecovery: { enabled: true },
-  emailVerification: { enabled: true },
-  loginHistory: { enabled: true },
-  sessionManagement: { enabled: true },
-  security: {
-    accountLockout: { enabled: true },
-  },
-});
-```
-
-### 3. Mount
-
-```typescript
-import express from 'express';
-import { createAuthModule } from './auth';
-
-const app = express();
-app.use(express.json());
-app.use('/auth', createAuthModule(config));
-app.listen(3000);
+await mongoose.connect(process.env.MONGODB_URI!);
+// ... then the 3 steps above
 ```
 
 ## API Endpoints

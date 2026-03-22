@@ -63,8 +63,9 @@ app.use('/api/cart', requireAuth, cartRoutes);      // Protected
 
 ## Environment Variables
 
+Add only `SESSION_SECRET` and email config to your **existing** `.env`:
+
 ```bash
-MONGODB_URI=mongodb+srv://...
 SESSION_SECRET=<64-char-random-string>
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -72,6 +73,8 @@ SMTP_USER=shop@example.com
 SMTP_PASS=app-password
 EMAIL_FROM=noreply@myshop.com
 ```
+
+> 💡 Your existing `MONGODB_URI` is reused automatically — no extra DB setup.
 
 ## Customer Flow
 

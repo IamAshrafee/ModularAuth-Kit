@@ -13,31 +13,44 @@ my-app/
 └── package.json
 ```
 
-## The Entire Setup (One File)
+## The Entire Setup (Add to Your Existing Server)
+
+```typescript
+// In your existing server.ts — add these 3 lines
+import { createConfig, createAuthModule } from './auth/index.js';
+
+const config = createConfig({ session: { secure: false } });
+app.use('/auth', createAuthModule(config));
+```
+
+Add one env var to your existing `.env`:
+
+```bash
+SESSION_SECRET=any-random-string-at-least-32-chars-long
+```
+
+> 💡 If you already have `mongoose.connect()`, that's all you need. No `MONGODB_URI` or `connectDatabase()`.
+
+### New Project?
+
+If starting fresh, you also need MongoDB and Express:
 
 ```typescript
 // src/server.ts
 import 'dotenv/config';
 import express from 'express';
+import mongoose from 'mongoose';
 import { createConfig, createAuthModule } from './auth/index.js';
-import { connectDatabase } from './auth/adapters/database/mongodb.adapter.js';
 
 async function main() {
-  // Connect to MongoDB
-  await connectDatabase(process.env.MONGODB_URI ?? 'mongodb://localhost:27017/myapp');
+  await mongoose.connect(process.env.MONGODB_URI ?? 'mongodb://localhost:27017/myapp');
 
   const app = express();
   app.use(express.json());
 
-  // Minimal config — just disable HTTPS for local dev
-  const config = createConfig({
-    session: { secure: false },
-  });
-
-  // Mount auth
+  const config = createConfig({ session: { secure: false } });
   app.use('/auth', createAuthModule(config));
 
-  // Your app route
   app.get('/', (req, res) => {
     res.json({ message: 'Hello! Visit /auth/register to create an account.' });
   });
@@ -46,14 +59,6 @@ async function main() {
 }
 
 main();
-```
-
-## Environment Variables
-
-```bash
-# .env
-MONGODB_URI=mongodb://localhost:27017/myapp
-SESSION_SECRET=any-random-string-at-least-32-chars-long
 ```
 
 ## Test It

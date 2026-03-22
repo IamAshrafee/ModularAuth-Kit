@@ -64,8 +64,9 @@ app.use('/auth', createAuthModule(config));
 
 ## Environment Variables
 
+Add these to your **existing** `.env` (only `SESSION_SECRET` is new — the rest are for Google/email):
+
 ```bash
-MONGODB_URI=mongodb+srv://...
 SESSION_SECRET=<64-char-random-string>
 GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxxx
@@ -76,6 +77,8 @@ SMTP_USER=noreply@myapp.com
 SMTP_PASS=app-password
 EMAIL_FROM=noreply@myapp.com
 ```
+
+> 💡 Your existing `MONGODB_URI` is reused automatically — the auth module uses your active Mongoose connection.
 
 ## User Flows
 
