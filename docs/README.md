@@ -63,3 +63,7 @@ Complete authentication module for Express.js + MongoDB + TypeScript.
 - [Session Security](security/session-security.md) — Cookie security
 - [Token Security](security/token-security.md) — Token handling
 - [Best Practices](security/best-practices.md) — Production checklist
+
+## FAQ
+
+- [Frequently Asked Questions](FAQ.md) — Common questions and troubleshooting
