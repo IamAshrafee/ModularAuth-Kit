@@ -6,6 +6,15 @@
 // ============================================================================
 
 import type { AuthConfig } from './auth.types.js';
+
+// ============================================================================
+// Deep Partial Utility Type
+// Recursively makes all properties optional.
+// ============================================================================
+
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 import {
   DEFAULTS,
   USERNAME_PATTERN,
@@ -289,7 +298,7 @@ function validateConfig(config: AuthConfig): void {
  * @returns Frozen AuthConfig object
  * @throws Error if required configuration values are missing
  */
-export function createConfig(userConfig?: Partial<AuthConfig>): Readonly<AuthConfig> {
+export function createConfig(userConfig?: DeepPartial<AuthConfig>): Readonly<AuthConfig> {
   // Step 1: Deep merge defaults with developer overrides
   const merged = userConfig
     ? deepMerge(defaultConfig as unknown as Record<string, unknown>, userConfig as unknown as Record<string, unknown>) as unknown as AuthConfig
