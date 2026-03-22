@@ -60,11 +60,11 @@
 
         <h2 style="font-size: 22px; margin-bottom: 24px;">Adding to an Existing Express Project</h2>
 
-        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--accent-light);">Step 1 — Copy & Install</h3>
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--accent-light);">Step 1 — Download & Install</h3>
         <p style="color: var(--text-secondary); margin-bottom: 16px;">
-          Copy the <code>src/auth/</code> folder from the 
-          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank">repository</a> 
-          into your project's <code>src/</code> directory. Then install missing dependencies:
+          Download the latest release from 
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit/releases" target="_blank">GitHub Releases</a>. 
+          Extract it and copy the <code>src/auth/</code> folder into your project's <code>src/</code> directory. Then install missing dependencies:
         </p>
         <div class="code-block" style="margin-bottom: 32px;">
           <div class="code-header">
@@ -138,10 +138,9 @@ npm init -y
 npm install express mongoose argon2 helmet cookie-parser zod dotenv
 npm install -D typescript tsx @types/express @types/cookie-parser
 
-<span class="cm"># Get the auth module</span>
-git clone https://github.com/IamAshrafee/ModularAuth-Kit.git temp
-cp -r temp/src/auth src/auth
-rm -rf temp</code>
+<span class="cm"># Download the auth module from GitHub Releases:</span>
+<span class="cm"># https://github.com/IamAshrafee/ModularAuth-Kit/releases</span>
+<span class="cm"># Extract and copy src/auth/ into your src/ folder</span></code>
           </div>
         </div>
 

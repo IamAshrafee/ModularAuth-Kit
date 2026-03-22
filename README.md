@@ -39,9 +39,12 @@ The AI agent will:
 
 Already have an Express + MongoDB project? **3 steps:**
 
-**1. Copy & Install**
+**1. Download & Install**
 ```bash
-# Copy src/auth/ into your project, then:
+# Download the latest release from GitHub Releases:
+# https://github.com/IamAshrafee/ModularAuth-Kit/releases
+# Extract and copy the src/auth/ folder into your project.
+
 npm install argon2 zod helmet cookie-parser    # skip any you already have
 ```
 
