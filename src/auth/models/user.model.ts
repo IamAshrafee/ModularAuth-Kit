@@ -29,7 +29,6 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       lowercase: true,
       trim: true,
-      sparse: true,
     },
     fullName: {
       type: String,
@@ -45,7 +44,6 @@ const userSchema = new Schema<UserDocument>(
     },
     googleId: {
       type: String,
-      sparse: true,
     },
     isEmailVerified: {
       type: Boolean,
