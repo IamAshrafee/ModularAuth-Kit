@@ -195,6 +195,12 @@ export class AuthService {
     // 2. Check account lockout
     if (config.security.accountLockout.enabled && user.lockUntil) {
       if (user.lockUntil > new Date()) {
+        auditLog('account_locked', {
+          userId: user._id.toString(),
+          ip: meta.ip,
+          success: false,
+          detail: 'login_attempt_while_locked',
+        });
         throw new AuthError(
           HTTP_STATUS.LOCKED,
           ERROR_CODES.ACCOUNT_LOCKED,

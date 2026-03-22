@@ -13,6 +13,7 @@ import { SessionService } from '../../services/session.service.js';
 import { sendSuccess } from '../../utils/api-response.js';
 import { handleError } from '../../utils/api-response.js';
 import { parseDevice } from '../../utils/device-parser.js';
+import { auditLog } from '../../utils/audit-logger.js';
 import { HTTP_STATUS, MESSAGES } from '../../auth.constants.js';
 
 // ============================================================================
@@ -112,10 +113,12 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async logout(req: Request, res: Response): Promise<void> {
       try {
+        const userId = req.user?._id.toString();
         if (req.sessionId) {
           await sessionService.revokeById(req.sessionId);
         }
         clearSessionCookie(res, config);
+        auditLog('logout', { userId, ip: req.ip, success: true });
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.LOGOUT_SUCCESS, null);
       } catch (error) {
         handleError(res, error);
@@ -127,10 +130,12 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async logoutAll(req: Request, res: Response): Promise<void> {
       try {
+        const userId = req.user?._id.toString();
         if (req.user) {
           await sessionService.revokeAllByUserId(req.user._id.toString());
         }
         clearSessionCookie(res, config);
+        auditLog('logout_all', { userId, ip: req.ip, success: true });
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.LOGOUT_SUCCESS, null);
       } catch (error) {
         handleError(res, error);

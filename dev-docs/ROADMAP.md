@@ -1030,7 +1030,7 @@ Update `docs/configuration/security.md` — add account lockout section
 ---
 
 ## Phase 16: Audit Logging
-`[ ]` **Status: Not Started**
+`[x]` **Status: Complete** ✅
 
 ### Goal
 Ensure all auth events are logged through the audit logger.
