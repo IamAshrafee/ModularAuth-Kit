@@ -1,6 +1,0 @@
-src/auth/models/login-history.model.ts(49,3): error TS2353: Object literal may only specify known properties, and 'ipAddress' does not exist in type '{ _id?: SchemaDefinitionProperty<ObjectId, LoginHistoryDocument, Document<unknown, {}, LoginHistoryDocument, { id: string; }, DefaultSchemaOptions> & Omit<...> & { ...; }> | undefined; ... 7 more ...; createdAt?: SchemaDefinitionProperty<...> | undefined; }'.
-src/auth/models/session.model.ts(34,5): error TS2353: Object literal may only specify known properties, and 'sessionId' does not exist in type 'SessionDocument | { _id?: SchemaDefinitionProperty<ObjectId, SessionDocument, Document<unknown, {}, SessionDocument, { id: string; }, DefaultSchemaOptions> & Omit<...> & { ...; }> | undefined; ... 7 more ...; expiresAt?: SchemaDefinitionProperty<...> | undefined; }'.
-src/auth/models/user.model.ts(67,16): error TS2790: The operand of a 'delete' operator must be optional.
-src/auth/models/user.model.ts(68,16): error TS2790: The operand of a 'delete' operator must be optional.
-src/auth/models/user.model.ts(74,16): error TS2790: The operand of a 'delete' operator must be optional.
-src/auth/models/user.model.ts(75,16): error TS2790: The operand of a 'delete' operator must be optional.

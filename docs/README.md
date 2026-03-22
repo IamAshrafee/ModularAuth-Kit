@@ -42,6 +42,14 @@ Complete authentication module for Express.js + MongoDB + TypeScript.
 - [Modifying Auth Flows](guides/modifying-flows.md)
 - [Deployment](guides/deployment.md)
 
+## Use Case Scenarios
+
+- [Express REST API](use-cases/express-rest-api.md) — Standard API setup
+- [E-commerce Backend](use-cases/ecommerce-backend.md) — Online store auth
+- [SaaS Application](use-cases/saas-app.md) — Full-featured with OAuth
+- [Blog Platform](use-cases/blog-platform.md) — Username login
+- [Minimal Setup](use-cases/minimal-setup.md) — Bare minimum
+
 ## Security
 
 - [Overview](security/overview.md) — Security measures summary
