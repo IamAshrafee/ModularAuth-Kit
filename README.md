@@ -135,6 +135,7 @@ Full documentation lives in [`docs/`](docs/README.md):
 - [Use Case Scenarios](docs/use-cases/README.md)
 - [AI Integration Guide](docs/ai-integration/README.md)
 - [Security](docs/security/overview.md)
+- [FAQ](docs/FAQ.md)
 
 ## Project Structure
 
