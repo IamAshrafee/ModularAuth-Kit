@@ -10,9 +10,14 @@ import type { Request, Response, NextFunction } from 'express';
 import type { AuthConfig } from './auth/auth.types.js';
 import { AuthService } from './auth/services/auth.service.js';
 import { SessionService } from './auth/services/session.service.js';
+import { TokenService } from './auth/services/token.service.js';
+import { EmailService } from './auth/services/email.service.js';
 import { MongoUserRepository } from './auth/repositories/mongodb/user.repository.js';
 import { MongoSessionRepository } from './auth/repositories/mongodb/session.repository.js';
+import { MongoTokenRepository } from './auth/repositories/mongodb/token.repository.js';
 import { MongoLoginHistoryRepository } from './auth/repositories/mongodb/login-history.repository.js';
+import { ConsoleEmailAdapter } from './auth/adapters/email/console.adapter.js';
+import { NodemailerEmailAdapter } from './auth/adapters/email/nodemailer.adapter.js';
 import { createAuthRouter } from './auth/http/routes/auth.routes.js';
 import { setupSecurity } from './auth/http/middleware/security.js';
 import { AuthError } from './auth/errors/auth-error.js';
@@ -55,6 +60,7 @@ export function createApp(config: AuthConfig) {
 
   const userRepository = new MongoUserRepository();
   const sessionRepository = new MongoSessionRepository();
+  const tokenRepository = new MongoTokenRepository();
   const loginHistoryRepository = new MongoLoginHistoryRepository();
 
   // -----------------------------------------------------------------------
@@ -72,6 +78,15 @@ export function createApp(config: AuthConfig) {
     loginHistoryRepository,
   });
 
+  const tokenService = new TokenService({ tokenRepository });
+
+  // Email adapter — console for dev, nodemailer for prod
+  const emailAdapter = config.email.adapter === 'nodemailer'
+    ? new NodemailerEmailAdapter(config)
+    : new ConsoleEmailAdapter();
+
+  const emailService = new EmailService(emailAdapter);
+
   // -----------------------------------------------------------------------
   // Mount auth routes at /auth
   // -----------------------------------------------------------------------
@@ -80,6 +95,10 @@ export function createApp(config: AuthConfig) {
     authService,
     sessionService,
     config,
+    tokenService,
+    emailService,
+    userRepository,
+    sessionRepository,
   });
 
   app.use('/auth', authRouter);

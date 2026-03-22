@@ -10,7 +10,12 @@ import { Router } from 'express';
 import type { AuthConfig } from '../../auth.types.js';
 import { AuthService } from '../../services/auth.service.js';
 import { SessionService } from '../../services/session.service.js';
+import { TokenService } from '../../services/token.service.js';
+import { EmailService } from '../../services/email.service.js';
 import { createAuthController } from '../controllers/auth.controller.js';
+import { createPasswordController } from '../controllers/password.controller.js';
+import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
+import type { ISessionRepository } from '../../repositories/interfaces/session.repository.interface.js';
 import { createRequireAuth } from '../middleware/authenticate.js';
 import { validate } from '../middleware/validate.js';
 import { createRateLimiter } from '../middleware/rate-limiter.js';
@@ -20,6 +25,10 @@ import {
   buildUpdateProfileSchema,
   changePasswordSchema,
 } from '../schemas/auth.schemas.js';
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../schemas/password.schemas.js';
 
 // ============================================================================
 // Route Factory
@@ -29,6 +38,11 @@ export interface AuthRouterDeps {
   authService: AuthService;
   sessionService: SessionService;
   config: AuthConfig;
+  // Optional — provided when passwordRecovery or emailVerification is enabled
+  tokenService?: TokenService;
+  emailService?: EmailService;
+  userRepository?: IUserRepository;
+  sessionRepository?: ISessionRepository;
 }
 
 /**
@@ -113,9 +127,45 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   );
 
   // -----------------------------------------------------------------------
+  // Conditional: Password Recovery
+  // -----------------------------------------------------------------------
+
+  if (
+    config.passwordRecovery.enabled &&
+    deps.tokenService &&
+    deps.emailService &&
+    deps.userRepository &&
+    deps.sessionRepository
+  ) {
+    const passwordController = createPasswordController({
+      tokenService: deps.tokenService,
+      emailService: deps.emailService,
+      userRepository: deps.userRepository,
+      sessionRepository: deps.sessionRepository,
+      config,
+    });
+
+    // POST /auth/forgot-password
+    router.post(
+      '/forgot-password',
+      createRateLimiter(config, 'forgotPassword'),
+      validate(forgotPasswordSchema),
+      passwordController.forgotPassword,
+    );
+
+    // POST /auth/reset-password
+    router.post(
+      '/reset-password',
+      createRateLimiter(config, 'forgotPassword'),
+      validate(resetPasswordSchema),
+      passwordController.resetPassword,
+    );
+  }
+
+  // -----------------------------------------------------------------------
   // Conditional routes — mounted in later phases
-  // Phase 10+: Google OAuth, password recovery, email verification,
-  //            session management, login history
+  // Phase 11+: Email verification, Google OAuth, session management,
+  //            login history
   // -----------------------------------------------------------------------
 
   return router;

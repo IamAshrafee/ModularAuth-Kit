@@ -26,6 +26,9 @@ async function bootstrap(): Promise<void> {
     security: {
       csrfProtection: false, // Disable CSRF for curl testing
     },
+    passwordRecovery: {
+      enabled: true, // Enable for development testing
+    },
   });
 
   // 2. Connect to MongoDB
