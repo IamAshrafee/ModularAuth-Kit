@@ -5,6 +5,10 @@
 
 ---
 
+> 🗺️ **Start here:** [**Development Roadmap**](ROADMAP.md) — complete step-by-step build guide (20 phases)
+
+---
+
 ## Table of Contents
 
 ### 📐 Architecture — *How the system is built*
