@@ -8,19 +8,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 
 import type { AuthConfig } from './auth/auth.types.js';
-import { AuthService } from './auth/services/auth.service.js';
-import { SessionService } from './auth/services/session.service.js';
-import { TokenService } from './auth/services/token.service.js';
-import { EmailService } from './auth/services/email.service.js';
-import { MongoUserRepository } from './auth/repositories/mongodb/user.repository.js';
-import { MongoSessionRepository } from './auth/repositories/mongodb/session.repository.js';
-import { MongoTokenRepository } from './auth/repositories/mongodb/token.repository.js';
-import { MongoLoginHistoryRepository } from './auth/repositories/mongodb/login-history.repository.js';
-import { ConsoleEmailAdapter } from './auth/adapters/email/console.adapter.js';
-import { NodemailerEmailAdapter } from './auth/adapters/email/nodemailer.adapter.js';
-import { OAuthService } from './auth/services/oauth.service.js';
-import { LoginHistoryService } from './auth/services/login-history.service.js';
-import { createAuthRouter } from './auth/http/routes/auth.routes.js';
+import { createAuthModule } from './auth/index.js';
 import { setupSecurity } from './auth/http/middleware/security.js';
 import { AuthError } from './auth/errors/auth-error.js';
 import { sendError, sendSuccess } from './auth/utils/api-response.js';
@@ -57,67 +45,10 @@ export function createApp(config: AuthConfig) {
   });
 
   // -----------------------------------------------------------------------
-  // Instantiate repositories
+  // Mount auth module at /auth
   // -----------------------------------------------------------------------
 
-  const userRepository = new MongoUserRepository();
-  const sessionRepository = new MongoSessionRepository();
-  const tokenRepository = new MongoTokenRepository();
-  const loginHistoryRepository = new MongoLoginHistoryRepository();
-
-  // -----------------------------------------------------------------------
-  // Instantiate services
-  // -----------------------------------------------------------------------
-
-  const sessionService = new SessionService({
-    sessionRepository,
-    userRepository,
-  });
-
-  const tokenService = new TokenService({ tokenRepository });
-
-  // Email adapter — console for dev, nodemailer for prod
-  const emailAdapter = config.email.adapter === 'nodemailer'
-    ? new NodemailerEmailAdapter(config)
-    : new ConsoleEmailAdapter();
-
-  const emailService = new EmailService(emailAdapter);
-
-  const authService = new AuthService({
-    userRepository,
-    sessionRepository,
-    loginHistoryRepository,
-    tokenService,
-    emailService,
-  });
-
-  // OAuth service (only used when Google OAuth is enabled)
-  const oauthService = new OAuthService({
-    userRepository,
-    sessionRepository,
-  });
-
-  // Login history service (only used when login history is enabled)
-  const loginHistoryService = new LoginHistoryService({
-    loginHistoryRepository,
-  });
-
-  // -----------------------------------------------------------------------
-  // Mount auth routes at /auth
-  // -----------------------------------------------------------------------
-
-  const authRouter = createAuthRouter({
-    authService,
-    sessionService,
-    config,
-    tokenService,
-    emailService,
-    userRepository,
-    sessionRepository,
-    oauthService,
-    loginHistoryService,
-  });
-
+  const authRouter = createAuthModule(config);
   app.use('/auth', authRouter);
 
   // -----------------------------------------------------------------------
