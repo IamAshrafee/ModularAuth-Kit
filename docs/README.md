@@ -50,6 +50,12 @@ Complete authentication module for Express.js + MongoDB + TypeScript.
 - [Blog Platform](use-cases/blog-platform.md) — Username login
 - [Minimal Setup](use-cases/minimal-setup.md) — Bare minimum
 
+## 🤖 AI-Assisted Integration
+
+- [Overview](ai-integration/README.md) — How AI agents can auto-integrate this module
+- [Agent Prompt](ai-integration/agent-prompt.md) — Copy-paste prompt for your AI agent
+- [Technical Context](ai-integration/context.md) — Module context for AI agents
+
 ## Security
 
 - [Overview](security/overview.md) — Security measures summary
