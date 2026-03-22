@@ -16,7 +16,9 @@ import { createAuthController } from '../controllers/auth.controller.js';
 import { createPasswordController } from '../controllers/password.controller.js';
 import { createVerificationController } from '../controllers/verification.controller.js';
 import { createOAuthController } from '../controllers/oauth.controller.js';
+import { createHistoryController } from '../controllers/history.controller.js';
 import { OAuthService } from '../../services/oauth.service.js';
+import { LoginHistoryService } from '../../services/login-history.service.js';
 import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
 import type { ISessionRepository } from '../../repositories/interfaces/session.repository.interface.js';
 import { createRequireAuth } from '../middleware/authenticate.js';
@@ -49,6 +51,8 @@ export interface AuthRouterDeps {
   sessionRepository?: ISessionRepository;
   // Optional — provided when Google OAuth is enabled
   oauthService?: OAuthService;
+  // Optional — provided when login history is enabled
+  loginHistoryService?: LoginHistoryService;
 }
 
 /**
@@ -220,8 +224,21 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   }
 
   // -----------------------------------------------------------------------
+  // Conditional: Login History
+  // -----------------------------------------------------------------------
+
+  if (config.loginHistory.enabled && deps.loginHistoryService) {
+    const historyController = createHistoryController({
+      loginHistoryService: deps.loginHistoryService,
+    });
+
+    // GET /auth/login-history
+    router.get('/login-history', requireAuth, historyController.getHistory);
+  }
+
+  // -----------------------------------------------------------------------
   // Conditional routes — mounted in later phases
-  // Phase 13+: Session management, login history
+  // Phase 14+: Session management
   // -----------------------------------------------------------------------
 
   return router;

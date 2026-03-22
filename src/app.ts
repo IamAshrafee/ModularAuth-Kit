@@ -19,6 +19,7 @@ import { MongoLoginHistoryRepository } from './auth/repositories/mongodb/login-h
 import { ConsoleEmailAdapter } from './auth/adapters/email/console.adapter.js';
 import { NodemailerEmailAdapter } from './auth/adapters/email/nodemailer.adapter.js';
 import { OAuthService } from './auth/services/oauth.service.js';
+import { LoginHistoryService } from './auth/services/login-history.service.js';
 import { createAuthRouter } from './auth/http/routes/auth.routes.js';
 import { setupSecurity } from './auth/http/middleware/security.js';
 import { AuthError } from './auth/errors/auth-error.js';
@@ -96,6 +97,11 @@ export function createApp(config: AuthConfig) {
     sessionRepository,
   });
 
+  // Login history service (only used when login history is enabled)
+  const loginHistoryService = new LoginHistoryService({
+    loginHistoryRepository,
+  });
+
   // -----------------------------------------------------------------------
   // Mount auth routes at /auth
   // -----------------------------------------------------------------------
@@ -109,6 +115,7 @@ export function createApp(config: AuthConfig) {
     userRepository,
     sessionRepository,
     oauthService,
+    loginHistoryService,
   });
 
   app.use('/auth', authRouter);

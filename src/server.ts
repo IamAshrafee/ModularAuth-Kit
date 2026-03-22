@@ -32,6 +32,9 @@ async function bootstrap(): Promise<void> {
     emailVerification: {
       enabled: true, // Enable for development testing
     },
+    loginHistory: {
+      enabled: true, // Enable for development testing
+    },
   });
 
   // 2. Connect to MongoDB
