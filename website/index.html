@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ModularAuth-Kit — Drop-in Auth for Express.js</title>
+  <meta name="description" content="Production-ready authentication module for Express.js + MongoDB + TypeScript. Copy, configure, done.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">M</span>
+        ModularAuth-Kit
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="getting-started.html">Get Started</a></li>
+        <li>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" class="nav-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge fade-up">
+        <span class="dot"></span>
+        Open Source · MIT License
+      </div>
+      <h1 class="fade-up">
+        Auth that <span class="gradient-text">just works.</span>
+      </h1>
+      <p class="hero-subtitle fade-up">
+        Copy one folder into your Express.js project. Configure what you need. 
+        Get 16 production-ready endpoints instantly.
+      </p>
+      <div class="hero-actions fade-up">
+        <a href="getting-started.html" class="btn btn-primary">
+          Get Started →
+        </a>
+        <a href="https://github.com/IamAshrafee/ModularAuth-Kit" class="btn btn-secondary" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Integration Code -->
+  <section>
+    <div class="container">
+      <div class="code-block fade-up" style="max-width: 680px; margin: 0 auto;">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-filename">server.ts</span>
+        </div>
+        <div class="code-body">
+<code><span class="cm">// That's it. 3 lines to add auth to your project.</span>
+<span class="kw">import</span> { createConfig, createAuthModule } <span class="kw">from</span> <span class="str">'./auth/index.js'</span>;
+
+<span class="kw">const</span> config = <span class="fn">createConfig</span>({ session: { secure: <span class="num">false</span> } });
+app.<span class="fn">use</span>(<span class="str">'/auth'</span>, <span class="fn">createAuthModule</span>(config));</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header center fade-up">
+        <p class="section-label">Features</p>
+        <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+        <p class="section-subtitle">All features are disabled by default. Enable only what your project needs — zero bloat.</p>
+      </div>
+
+      <div class="feature-grid stagger">
+        <div class="feature-card fade-up">
+          <div class="feature-icon">🔐</div>
+          <h3>Email & Password Auth</h3>
+          <p>Register, login, logout with argon2id hashing. Secure by default.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon green">📱</div>
+          <h3>Session Management</h3>
+          <p>Server-side sessions with httpOnly cookies. List and revoke devices.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon">🔑</div>
+          <h3>Password Recovery</h3>
+          <p>Forgot password flow with secure, hashed, single-use tokens.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon green">✉️</div>
+          <h3>Email Verification</h3>
+          <p>6-digit OTP verification. Console adapter for dev, Nodemailer for prod.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon">🌐</div>
+          <h3>Google OAuth 2.0</h3>
+          <p>No Passport.js. Direct implementation with automatic account linking.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon green">📊</div>
+          <h3>Login History</h3>
+          <p>Track every login with device info, IP address, and timestamps.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon">🔒</div>
+          <h3>Account Lockout</h3>
+          <p>Temporary lock after failed attempts. Auto-expires, no admin needed.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon green">📝</div>
+          <h3>Audit Logging</h3>
+          <p>Structured JSON logs for every auth event. Debug and monitor easily.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="feature-icon">🛡️</div>
+          <h3>OWASP Compliant</h3>
+          <p>Helmet, CSRF protection, enumeration prevention, rate limiting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section>
+    <div class="container">
+      <div class="section-header center fade-up">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-title">Three steps. That's it.</h2>
+      </div>
+
+      <div class="steps">
+        <div class="step fade-up">
+          <div class="step-number">1</div>
+          <h3>Copy</h3>
+          <p>Copy the <code>src/auth/</code> folder into your existing Express.js project. No npm package to install — you own the code.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step-number">2</div>
+          <h3>Configure</h3>
+          <p>Call <code>createConfig()</code> with the features you need. Everything is opt-in. Add <code>SESSION_SECRET</code> to your .env.</p>
+        </div>
+        <div class="step fade-up">
+          <div class="step-number">3</div>
+          <h3>Mount</h3>
+          <p>One line: <code>app.use('/auth', createAuthModule(config))</code>. Your existing MongoDB connection and routes are untouched.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Before vs After -->
+  <section>
+    <div class="container">
+      <div class="section-header center fade-up">
+        <p class="section-label">Why</p>
+        <h2 class="section-title">Stop rewriting auth from scratch.</h2>
+        <p class="section-subtitle">Every Express project needs auth. Why write 500+ lines every time?</p>
+      </div>
+
+      <div class="comparison fade-up">
+        <div>
+          <p class="comparison-label before">✕ Without ModularAuth-Kit</p>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><span></span><span></span><span></span></div>
+              <span class="code-filename">auth.ts — you write all of this</span>
+            </div>
+            <div class="code-body">
+<code><span class="cm">// User model, password hashing, session store,</span>
+<span class="cm">// login controller, register controller,</span>
+<span class="cm">// forgot-password, reset-password, email service,</span>
+<span class="cm">// CSRF middleware, rate limiter, cookie config,</span>
+<span class="cm">// session rotation, account lockout logic,</span>
+<span class="cm">// Google OAuth flow, input validation,</span>
+<span class="cm">// error handling, audit logging...</span>
+<span class="cm">//</span>
+<span class="cm">// 500+ lines. Every. Single. Project.</span>
+<span class="cm">// And you still forget enumeration protection.</span></code>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="comparison-label after">✓ With ModularAuth-Kit</p>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><span></span><span></span><span></span></div>
+              <span class="code-filename">server.ts — you write this</span>
+            </div>
+            <div class="code-body">
+<code><span class="kw">import</span> { createConfig, createAuthModule } <span class="kw">from</span> <span class="str">'./auth/index.js'</span>;
+
+<span class="kw">const</span> config = <span class="fn">createConfig</span>({
+  session: { secure: <span class="num">false</span> },
+  passwordRecovery: { enabled: <span class="num">true</span> },
+  emailVerification: { enabled: <span class="num">true</span> },
+  loginHistory: { enabled: <span class="num">true</span> },
+  sessionManagement: { enabled: <span class="num">true</span> },
+  security: {
+    accountLockout: { enabled: <span class="num">true</span> },
+  },
+});
+
+app.<span class="fn">use</span>(<span class="str">'/auth'</span>, <span class="fn">createAuthModule</span>(config));</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Integration -->
+  <section>
+    <div class="container">
+      <div class="ai-section fade-up">
+        <div>
+          <p class="section-label">🤖 AI-Powered</p>
+          <h2>Let your AI agent do the integration.</h2>
+          <p>
+            Paste a single prompt to your AI coding agent (Cursor, Copilot, Gemini). 
+            The agent analyzes your project, asks what you need, and wires everything up automatically.
+          </p>
+          <div class="ai-steps">
+            <div class="ai-step">
+              <span class="ai-step-num">0</span>
+              <span>AI checks if your project is compatible (Express + MongoDB)</span>
+            </div>
+            <div class="ai-step">
+              <span class="ai-step-num">1</span>
+              <span>AI reads your project files — understands structure, deps, DB setup</span>
+            </div>
+            <div class="ai-step">
+              <span class="ai-step-num">2</span>
+              <span>Asks only what it can't figure out from the code</span>
+            </div>
+            <div class="ai-step">
+              <span class="ai-step-num">3</span>
+              <span>Installs missing deps, configures, mounts, verifies — done</span>
+            </div>
+          </div>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit/blob/main/docs/ai-integration/agent-prompt.md" class="btn btn-primary" style="margin-top: 24px;" target="_blank" rel="noopener">Get the AI Prompt →</a>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">AI agent output</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm">✅ I've analyzed your project:</span>
+<span class="cm">  • Express 5.x found in src/app.ts</span>
+<span class="cm">  • MongoDB connected via mongoose.connect()</span>
+<span class="cm">  • Missing deps: argon2, zod</span>
+<span class="cm"></span>
+<span class="cm">✅ Installed 2 packages</span>
+<span class="cm">✅ Added SESSION_SECRET to .env</span>
+<span class="cm">✅ Added 4 lines to src/app.ts</span>
+<span class="cm">✅ TypeScript: 0 errors</span>
+<span class="cm">✅ Server started on :3000</span>
+<span class="cm">✅ POST /auth/register — 201</span>
+<span class="cm">✅ POST /auth/login — 200</span>
+<span class="cm">✅ GET  /auth/me — 200</span>
+<span class="cm"></span>
+<span class="fn">Auth is ready. 16 endpoints available.</span></code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section>
+    <div class="container">
+      <div class="stats fade-up">
+        <div class="stat">
+          <div class="stat-value">16</div>
+          <div class="stat-label">API Endpoints</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Config Required</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Lines to Integrate</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">TypeScript</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech & Compatibility -->
+  <section>
+    <div class="container">
+      <div class="section-header fade-up">
+        <p class="section-label">Built With</p>
+        <h2 class="section-title">Modern stack. No legacy baggage.</h2>
+      </div>
+      <div class="compat-badges fade-up">
+        <span class="compat-badge"><span class="check">✓</span> Express.js 5.x</span>
+        <span class="compat-badge"><span class="check">✓</span> TypeScript 5.x</span>
+        <span class="compat-badge"><span class="check">✓</span> MongoDB + Mongoose 9</span>
+        <span class="compat-badge"><span class="check">✓</span> argon2id Hashing</span>
+        <span class="compat-badge"><span class="check">✓</span> Zod Validation</span>
+        <span class="compat-badge"><span class="check">✓</span> Helmet Security</span>
+        <span class="compat-badge"><span class="check">✓</span> OWASP Top 10</span>
+        <span class="compat-badge"><span class="check">✓</span> Zero npm Vulnerabilities</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="text-align: center;">
+    <div class="container">
+      <div class="fade-up">
+        <h2 class="section-title">Ready to stop writing auth?</h2>
+        <p class="section-subtitle" style="margin: 0 auto 32px;">
+          Copy the folder. Configure. Ship.
+        </p>
+        <div class="hero-actions">
+          <a href="getting-started.html" class="btn btn-primary">Get Started →</a>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" class="btn btn-secondary" target="_blank" rel="noopener">
+            View Source
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-text">
+          Built by <a href="https://github.com/IamAshrafee" target="_blank" rel="noopener">Ashrafee</a> · MIT License
+        </p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="features.html">Features</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

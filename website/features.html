@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — ModularAuth-Kit</title>
+  <meta name="description" content="Detailed breakdown of every feature in ModularAuth-Kit — from password hashing to Google OAuth.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">M</span>
+        ModularAuth-Kit
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="features.html" class="active">Features</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="getting-started.html">Get Started</a></li>
+        <li>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" class="nav-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <section class="hero" style="padding-bottom: 40px;">
+    <div class="container">
+      <h1 class="fade-up">Features</h1>
+      <p class="hero-subtitle fade-up">Every feature is opt-in. Start with zero config and enable what you need.</p>
+    </div>
+  </section>
+
+  <!-- Feature Details -->
+  <section style="padding-top: 0;">
+    <div class="container">
+
+      <!-- Auth -->
+      <div class="feature-detail fade-up">
+        <div>
+          <span class="feature-tag">Core</span>
+          <h3>Email & Password Authentication</h3>
+          <p>Register, login, logout, profile management, and password changes — all handled out of the box. Passwords are hashed with argon2id using OWASP-recommended parameters.</p>
+          <p>Enumeration protection uses identical error messages for "user not found" and "wrong password" to prevent email harvesting attacks.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">7 endpoints, always available</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">POST</span>  <span class="str">/auth/register</span>
+<span class="fn">POST</span>  <span class="str">/auth/login</span>
+<span class="fn">POST</span>  <span class="str">/auth/logout</span>
+<span class="fn">POST</span>  <span class="str">/auth/logout-all</span>
+<span class="fn">GET</span>   <span class="str">/auth/me</span>
+<span class="fn">PATCH</span> <span class="str">/auth/me</span>
+<span class="fn">POST</span>  <span class="str">/auth/change-password</span></code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions -->
+      <div class="feature-detail fade-up">
+        <div>
+          <span class="feature-tag">Core</span>
+          <h3>Server-Side Sessions</h3>
+          <p>Sessions are stored in MongoDB — not in the cookie. The browser only receives an httpOnly, signed, SameSite cookie with the session ID.</p>
+          <p>Session IDs are rotated on login to prevent fixation attacks. Idle sessions expire after 30 minutes of inactivity.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Session config</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">createConfig</span>({
+  session: {
+    cookieName: <span class="str">'sid'</span>,
+    maxAge: <span class="num">604_800_000</span>,     <span class="cm">// 7 days</span>
+    idleTimeout: <span class="num">1_800_000</span>,  <span class="cm">// 30 min</span>
+    rotateOnLogin: <span class="num">true</span>,
+    secure: <span class="num">true</span>,            <span class="cm">// HTTPS</span>
+    sameSite: <span class="str">'lax'</span>,
+  },
+});</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Recovery -->
+      <div class="feature-detail fade-up">
+        <div>
+          <span class="feature-tag">Opt-in</span>
+          <h3>Password Recovery</h3>
+          <p>Forgot password and reset password flows with cryptographically secure tokens. Tokens are hashed (SHA-256) before database storage and expire after 15 minutes.</p>
+          <p>The forgot-password response is always the same whether the email exists or not — preventing email enumeration.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Enable with one line</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">createConfig</span>({
+  passwordRecovery: { enabled: <span class="num">true</span> },
+});
+
+<span class="cm">// Adds:</span>
+<span class="cm">// POST /auth/forgot-password</span>
+<span class="cm">// POST /auth/reset-password</span></code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Verification -->
+      <div class="feature-detail fade-up">
+        <div>
+          <span class="feature-tag">Opt-in</span>
+          <h3>Email Verification</h3>
+          <p>6-digit OTP sent by email. Use the console adapter in development (prints to terminal) and Nodemailer in production.</p>
+          <p>Optionally block unverified users from accessing protected routes with <code>requiredForLogin</code>.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Configuration</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">createConfig</span>({
+  emailVerification: {
+    enabled: <span class="num">true</span>,
+    requiredForLogin: <span class="num">false</span>,
+  },
+  email: { adapter: <span class="str">'console'</span> },
+});
+
+<span class="cm">// Adds:</span>
+<span class="cm">// POST /auth/verify-email</span>
+<span class="cm">// POST /auth/resend-verification</span></code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google OAuth -->
+      <div class="feature-detail fade-up">
+        <div>
+          <span class="feature-tag">Opt-in</span>
+          <h3>Google OAuth 2.0</h3>
+          <p>Direct HTTP implementation — no Passport.js dependency. Handles the full OAuth flow including automatic account linking when a Google email matches an existing account.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Configuration</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">createConfig</span>({
+  login: { allowGoogleOAuth: <span class="num">true</span> },
+});
+
+<span class="cm">// Set in .env:</span>
+<span class="cm">// GOOGLE_CLIENT_ID=</span>
+<span class="cm">// GOOGLE_CLIENT_SECRET=</span>
+<span class="cm">// GOOGLE_CALLBACK_URL=</span>
+
+<span class="cm">// Adds:</span>
+<span class="cm">// GET /auth/google</span>
+<span class="cm">// GET /auth/google/callback</span></code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Lockout -->
+      <div class="feature-detail fade-up">
+        <div>
+          <span class="feature-tag">Opt-in</span>
+          <h3>Account Lockout</h3>
+          <p>Temporarily locks an account after too many failed login attempts. The lock auto-expires — no admin intervention needed. Configurable attempt count and lock duration.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Configuration</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">createConfig</span>({
+  security: {
+    accountLockout: {
+      enabled: <span class="num">true</span>,
+      maxFailedAttempts: <span class="num">5</span>,
+      lockDurationMinutes: <span class="num">15</span>,
+    },
+  },
+});</code>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- All 16 Endpoints -->
+  <section>
+    <div class="container">
+      <div class="section-header center fade-up">
+        <p class="section-label">API Reference</p>
+        <h2 class="section-title">16 endpoints. One mount.</h2>
+      </div>
+      <div class="code-block fade-up" style="max-width: 680px; margin: 0 auto;">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-filename">All endpoints</span>
+        </div>
+        <div class="code-body">
+<code><span class="cm">── Always Available ──────────────────────</span>
+<span class="fn">POST</span>   <span class="str">/auth/register</span>          Create account
+<span class="fn">POST</span>   <span class="str">/auth/login</span>             Login
+<span class="fn">POST</span>   <span class="str">/auth/logout</span>            Logout
+<span class="fn">POST</span>   <span class="str">/auth/logout-all</span>        Logout all devices
+<span class="fn">GET</span>    <span class="str">/auth/me</span>                Get profile
+<span class="fn">PATCH</span>  <span class="str">/auth/me</span>                Update profile
+<span class="fn">POST</span>   <span class="str">/auth/change-password</span>   Change password
+
+<span class="cm">── Password Recovery (opt-in) ────────────</span>
+<span class="fn">POST</span>   <span class="str">/auth/forgot-password</span>   Request reset
+<span class="fn">POST</span>   <span class="str">/auth/reset-password</span>    Reset with token
+
+<span class="cm">── Email Verification (opt-in) ───────────</span>
+<span class="fn">POST</span>   <span class="str">/auth/verify-email</span>      Verify OTP
+<span class="fn">POST</span>   <span class="str">/auth/resend-verification</span> Resend
+
+<span class="cm">── Google OAuth (opt-in) ─────────────────</span>
+<span class="fn">GET</span>    <span class="str">/auth/google</span>            Redirect
+<span class="fn">GET</span>    <span class="str">/auth/google/callback</span>   Callback
+
+<span class="cm">── Login History (opt-in) ────────────────</span>
+<span class="fn">GET</span>    <span class="str">/auth/login-history</span>     Paginated
+
+<span class="cm">── Session Management (opt-in) ───────────</span>
+<span class="fn">GET</span>    <span class="str">/auth/sessions</span>          List
+<span class="fn">DELETE</span> <span class="str">/auth/sessions/:id</span>      Revoke</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-text">Built by <a href="https://github.com/IamAshrafee" target="_blank" rel="noopener">Ashrafee</a> · MIT License</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="getting-started.html">Get Started</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

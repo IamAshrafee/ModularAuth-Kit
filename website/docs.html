@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation — ModularAuth-Kit</title>
+  <meta name="description" content="Complete documentation for ModularAuth-Kit — configuration, API reference, security, and guides.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">M</span>
+        ModularAuth-Kit
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="docs.html" class="active">Docs</a></li>
+        <li><a href="getting-started.html">Get Started</a></li>
+        <li>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" class="nav-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Docs Layout -->
+  <div class="container">
+    <div class="docs-layout">
+
+      <!-- Sidebar -->
+      <aside class="docs-sidebar">
+        <div class="docs-sidebar-group">
+          <h4>Getting Started</h4>
+          <a href="#overview" class="active">Overview</a>
+          <a href="#installation">Installation</a>
+          <a href="#configuration">Configuration</a>
+        </div>
+        <div class="docs-sidebar-group">
+          <h4>API Reference</h4>
+          <a href="#endpoints">All Endpoints</a>
+          <a href="#response-format">Response Format</a>
+          <a href="#error-codes">Error Codes</a>
+        </div>
+        <div class="docs-sidebar-group">
+          <h4>Configuration</h4>
+          <a href="#config-registration">Registration</a>
+          <a href="#config-login">Login</a>
+          <a href="#config-sessions">Sessions</a>
+          <a href="#config-security">Security</a>
+        </div>
+        <div class="docs-sidebar-group">
+          <h4>Security</h4>
+          <a href="#security-passwords">Passwords</a>
+          <a href="#security-sessions">Sessions</a>
+          <a href="#security-tokens">Tokens</a>
+        </div>
+        <div class="docs-sidebar-group">
+          <h4>Guides</h4>
+          <a href="#guide-custom-fields">Custom Fields</a>
+          <a href="#guide-middleware">Custom Middleware</a>
+          <a href="#guide-email">Email Provider</a>
+          <a href="#guide-deployment">Deployment</a>
+        </div>
+        <div class="docs-sidebar-group">
+          <h4>Resources</h4>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit/tree/main/docs" target="_blank">Full Docs on GitHub ↗</a>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit/tree/main/docs/use-cases" target="_blank">Use Cases ↗</a>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit/tree/main/docs/FAQ.md" target="_blank">FAQ ↗</a>
+        </div>
+      </aside>
+
+      <!-- Content -->
+      <main class="docs-content">
+
+        <h1 id="overview">Documentation</h1>
+        <p>ModularAuth-Kit is a drop-in authentication module for Express.js + MongoDB + TypeScript. Copy the <code>src/auth/</code> folder into your project and mount it with one function call.</p>
+
+        <div class="callout">
+          <strong>Tip:</strong> For the complete, always-up-to-date documentation, visit the <a href="https://github.com/IamAshrafee/ModularAuth-Kit/tree/main/docs" target="_blank">docs/ folder on GitHub</a>. This page is a quick reference.
+        </div>
+
+        <!-- Installation -->
+        <h2 id="installation">Installation</h2>
+        <p>Copy the <code>src/auth/</code> folder into your project and install missing dependencies:</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">terminal</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm"># Install only what's missing from your project:</span>
+npm install argon2 zod helmet cookie-parser
+
+<span class="cm"># Add SESSION_SECRET to your .env</span>
+echo "SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")" >> .env</code>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Already have MongoDB connected?</strong> The auth module reuses your active Mongoose connection automatically. No <code>connectDatabase()</code> call needed.
+        </div>
+
+        <!-- Configuration -->
+        <h2 id="configuration">Configuration</h2>
+        <p>All features are disabled by default. Use <code>createConfig()</code> to enable what you need:</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">config example</span>
+          </div>
+          <div class="code-body">
+<code><span class="kw">import</span> { createConfig, createAuthModule } <span class="kw">from</span> <span class="str">'./auth/index.js'</span>;
+
+<span class="kw">const</span> config = <span class="fn">createConfig</span>({
+  session: { secure: <span class="num">false</span> },
+  passwordRecovery: { enabled: <span class="num">true</span> },
+  emailVerification: { enabled: <span class="num">true</span> },
+  loginHistory: { enabled: <span class="num">true</span> },
+  sessionManagement: { enabled: <span class="num">true</span> },
+  security: {
+    accountLockout: { enabled: <span class="num">true</span> },
+  },
+});
+
+app.<span class="fn">use</span>(<span class="str">'/auth'</span>, <span class="fn">createAuthModule</span>(config));</code>
+          </div>
+        </div>
+
+        <!-- Endpoints -->
+        <h2 id="endpoints">All Endpoints</h2>
+        <table>
+          <thead>
+            <tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>POST</td><td><code>/register</code></td><td>No</td><td>Create account</td></tr>
+            <tr><td>POST</td><td><code>/login</code></td><td>No</td><td>Login</td></tr>
+            <tr><td>POST</td><td><code>/logout</code></td><td>Yes</td><td>Logout</td></tr>
+            <tr><td>POST</td><td><code>/logout-all</code></td><td>Yes</td><td>Logout all devices</td></tr>
+            <tr><td>GET</td><td><code>/me</code></td><td>Yes</td><td>Get profile</td></tr>
+            <tr><td>PATCH</td><td><code>/me</code></td><td>Yes</td><td>Update profile</td></tr>
+            <tr><td>POST</td><td><code>/change-password</code></td><td>Yes</td><td>Change password</td></tr>
+            <tr><td>POST</td><td><code>/forgot-password</code></td><td>No</td><td>Request reset token</td></tr>
+            <tr><td>POST</td><td><code>/reset-password</code></td><td>No</td><td>Reset with token</td></tr>
+            <tr><td>POST</td><td><code>/verify-email</code></td><td>Yes</td><td>Verify with OTP</td></tr>
+            <tr><td>POST</td><td><code>/resend-verification</code></td><td>Yes</td><td>Resend OTP</td></tr>
+            <tr><td>GET</td><td><code>/google</code></td><td>No</td><td>OAuth redirect</td></tr>
+            <tr><td>GET</td><td><code>/google/callback</code></td><td>No</td><td>OAuth callback</td></tr>
+            <tr><td>GET</td><td><code>/login-history</code></td><td>Yes</td><td>Login history</td></tr>
+            <tr><td>GET</td><td><code>/sessions</code></td><td>Yes</td><td>List sessions</td></tr>
+            <tr><td>DELETE</td><td><code>/sessions/:id</code></td><td>Yes</td><td>Revoke session</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Response Format -->
+        <h2 id="response-format">Response Format</h2>
+        <p>All endpoints return a consistent JSON structure:</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Success response</span>
+          </div>
+          <div class="code-body">
+<code>{
+  <span class="str">"success"</span>: <span class="num">true</span>,
+  <span class="str">"message"</span>: <span class="str">"Login successful"</span>,
+  <span class="str">"data"</span>: { <span class="cm">/* user object, session, etc. */</span> }
+}</code>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-top: 12px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">Error response</span>
+          </div>
+          <div class="code-body">
+<code>{
+  <span class="str">"success"</span>: <span class="num">false</span>,
+  <span class="str">"message"</span>: <span class="str">"The email or password you entered is incorrect"</span>,
+  <span class="str">"error"</span>: {
+    <span class="str">"code"</span>: <span class="str">"INVALID_CREDENTIALS"</span>
+  }
+}</code>
+          </div>
+        </div>
+
+        <!-- Error Codes -->
+        <h2 id="error-codes">Error Codes</h2>
+        <table>
+          <thead>
+            <tr><th>Code</th><th>HTTP</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>VALIDATION_ERROR</code></td><td>400</td><td>Invalid input data</td></tr>
+            <tr><td><code>INVALID_CREDENTIALS</code></td><td>401</td><td>Wrong email or password</td></tr>
+            <tr><td><code>UNAUTHORIZED</code></td><td>401</td><td>Not logged in</td></tr>
+            <tr><td><code>FORBIDDEN</code></td><td>403</td><td>Not allowed</td></tr>
+            <tr><td><code>EMAIL_NOT_VERIFIED</code></td><td>403</td><td>Must verify email first</td></tr>
+            <tr><td><code>NOT_FOUND</code></td><td>404</td><td>Resource not found</td></tr>
+            <tr><td><code>CONFLICT</code></td><td>409</td><td>Email/username taken</td></tr>
+            <tr><td><code>ACCOUNT_LOCKED</code></td><td>423</td><td>Too many failed attempts</td></tr>
+            <tr><td><code>RATE_LIMITED</code></td><td>429</td><td>Too many requests</td></tr>
+            <tr><td><code>TOKEN_EXPIRED</code></td><td>400</td><td>Link expired</td></tr>
+            <tr><td><code>TOKEN_INVALID</code></td><td>400</td><td>Link invalid or used</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Config Sections -->
+        <h2 id="config-registration">Registration Config</h2>
+        <p>Enable extra fields on the user model:</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">registration fields</span>
+          </div>
+          <div class="code-body">
+<code><span class="fn">createConfig</span>({
+  registration: {
+    fields: {
+      username:  { enabled: <span class="num">true</span>, required: <span class="num">true</span> },
+      fullName:  { enabled: <span class="num">true</span>, required: <span class="num">false</span> },
+      firstName: { enabled: <span class="num">true</span>, required: <span class="num">true</span> },
+      lastName:  { enabled: <span class="num">true</span>, required: <span class="num">true</span> },
+    },
+  },
+});</code>
+          </div>
+        </div>
+
+        <h2 id="config-login">Login Config</h2>
+        <table>
+          <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>identifiers</code></td><td><code>['email']</code></td><td>Fields users can log in with</td></tr>
+            <tr><td><code>allowGoogleOAuth</code></td><td><code>false</code></td><td>Enable Google OAuth</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="config-sessions">Session Config</h2>
+        <table>
+          <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>cookieName</code></td><td><code>'sid'</code></td><td>Cookie name</td></tr>
+            <tr><td><code>maxAge</code></td><td>7 days</td><td>Absolute session lifetime</td></tr>
+            <tr><td><code>idleTimeout</code></td><td>30 minutes</td><td>Inactivity timeout</td></tr>
+            <tr><td><code>rotateOnLogin</code></td><td><code>true</code></td><td>Rotate session ID on login</td></tr>
+            <tr><td><code>secure</code></td><td><code>true</code></td><td>HTTPS-only cookies</td></tr>
+            <tr><td><code>sameSite</code></td><td><code>'lax'</code></td><td>Cookie SameSite attribute</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="config-security">Security Config</h2>
+        <table>
+          <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>csrfProtection</code></td><td><code>true</code></td><td>CSRF double-submit cookie</td></tr>
+            <tr><td><code>helmet</code></td><td><code>true</code></td><td>Security headers</td></tr>
+            <tr><td><code>accountLockout.enabled</code></td><td><code>false</code></td><td>Enable lockout</td></tr>
+            <tr><td><code>accountLockout.maxFailedAttempts</code></td><td><code>5</code></td><td>Attempts before lock</td></tr>
+            <tr><td><code>accountLockout.lockDurationMinutes</code></td><td><code>15</code></td><td>Lock duration</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Security -->
+        <h2 id="security-passwords">Password Security</h2>
+        <p><strong>Algorithm:</strong> argon2id (OWASP recommended). Parameters: Memory 19 MiB, Iterations 2, Parallelism 1.</p>
+        <p>Passwords are never stored in plaintext. The <code>passwordHash</code> field is never included in API responses.</p>
+
+        <h2 id="security-sessions">Session Security</h2>
+        <p>Sessions are stored server-side in MongoDB. Cookies are httpOnly, signed, and SameSite. Session IDs are rotated on login to prevent fixation attacks.</p>
+
+        <h2 id="security-tokens">Token Security</h2>
+        <p>Password reset and email verification tokens are hashed (SHA-256) before database storage. The raw token is sent to the user — only the hash exists in the database. Tokens are single-use and expire after 15 minutes.</p>
+
+        <!-- Guides -->
+        <h2 id="guide-custom-fields">Adding Custom Fields</h2>
+        <p>To add fields to the user model, update three places: the Mongoose schema, the TypeScript types, and the Zod validation schema. See the <a href="https://github.com/IamAshrafee/ModularAuth-Kit/blob/main/docs/guides/adding-custom-fields.md" target="_blank">full guide</a>.</p>
+
+        <h2 id="guide-middleware">Custom Middleware</h2>
+        <p>Add middleware before the auth router mount point:</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">custom middleware</span>
+          </div>
+          <div class="code-body">
+<code>app.<span class="fn">use</span>(<span class="str">'/auth'</span>, customMiddleware, <span class="fn">createAuthModule</span>(config));</code>
+          </div>
+        </div>
+
+        <h2 id="guide-email">Custom Email Provider</h2>
+        <p>Implement the <code>IEmailAdapter</code> interface with your email service (SendGrid, AWS SES, etc.). See the <a href="https://github.com/IamAshrafee/ModularAuth-Kit/blob/main/docs/guides/custom-email-provider.md" target="_blank">full guide</a>.</p>
+
+        <h2 id="guide-deployment">Deployment Checklist</h2>
+        <p>Before deploying to production:</p>
+        <ul style="color: var(--text-secondary); padding-left: 20px; margin-bottom: 16px;">
+          <li>Set <code>NODE_ENV=production</code></li>
+          <li>Set <code>session.secure: true</code> (requires HTTPS)</li>
+          <li>Use a strong, unique <code>SESSION_SECRET</code></li>
+          <li>Enable CSRF protection</li>
+          <li>Enable account lockout</li>
+          <li>Use Nodemailer with real SMTP credentials</li>
+          <li>Configure a reverse proxy (nginx, Cloudflare)</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Full documentation</strong> is available on <a href="https://github.com/IamAshrafee/ModularAuth-Kit/tree/main/docs" target="_blank">GitHub →</a>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-text">Built by <a href="https://github.com/IamAshrafee" target="_blank" rel="noopener">Ashrafee</a> · MIT License</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="getting-started.html">Get Started</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

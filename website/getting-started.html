@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Started — ModularAuth-Kit</title>
+  <meta name="description" content="Add authentication to your Express.js project in under 5 minutes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">M</span>
+        ModularAuth-Kit
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="getting-started.html" class="active">Get Started</a></li>
+        <li>
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" class="nav-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <section class="hero" style="padding-bottom: 40px;">
+    <div class="container">
+      <h1 class="fade-up">Get Started</h1>
+      <p class="hero-subtitle fade-up">Add auth to your project in 3 steps. Under 5 minutes.</p>
+    </div>
+  </section>
+
+  <!-- Path Selector -->
+  <section style="padding-top: 0;">
+    <div class="container" style="max-width: 780px;">
+
+      <div class="gs-tabs fade-up">
+        <button class="gs-tab active" data-tab="existing">Existing Project</button>
+        <button class="gs-tab" data-tab="new">New Project</button>
+        <button class="gs-tab" data-tab="ai">AI Agent</button>
+      </div>
+
+      <!-- Existing Project -->
+      <div class="gs-panel active" id="existing">
+
+        <h2 style="font-size: 22px; margin-bottom: 24px;">Adding to an Existing Express Project</h2>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--accent-light);">Step 1 — Copy & Install</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+          Copy the <code>src/auth/</code> folder from the 
+          <a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank">repository</a> 
+          into your project's <code>src/</code> directory. Then install missing dependencies:
+        </p>
+        <div class="code-block" style="margin-bottom: 32px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">terminal</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm"># Only install what you don't already have:</span>
+npm install argon2 zod helmet cookie-parser</code>
+          </div>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--accent-light);">Step 2 — Add SESSION_SECRET</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+          Add one line to your existing <code>.env</code> file. This is the only new environment variable required:
+        </p>
+        <div class="code-block" style="margin-bottom: 32px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">.env</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm"># Generate a random secret:</span>
+<span class="cm"># node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</span>
+SESSION_SECRET=<span class="str">paste-your-generated-secret-here</span></code>
+          </div>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--accent-light);">Step 3 — Mount</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+          Add 3 lines to your existing Express app. Put it after <code>express.json()</code> and before your routes:
+        </p>
+        <div class="code-block" style="margin-bottom: 24px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">your existing app.ts</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm">// Add this import</span>
+<span class="kw">import</span> { createConfig, createAuthModule } <span class="kw">from</span> <span class="str">'./auth/index.js'</span>;
+
+<span class="cm">// After your existing express.json() and mongoose.connect()...</span>
+
+<span class="kw">const</span> config = <span class="fn">createConfig</span>({ session: { secure: <span class="num">false</span> } });
+app.<span class="fn">use</span>(<span class="str">'/auth'</span>, <span class="fn">createAuthModule</span>(config));
+
+<span class="cm">// Your existing routes continue to work unchanged</span></code>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Your MongoDB connection is reused automatically.</strong> If you already have <code>mongoose.connect()</code> in your project, the auth module uses it. No extra database setup needed.
+        </div>
+
+      </div>
+
+      <!-- New Project -->
+      <div class="gs-panel" id="new">
+
+        <h2 style="font-size: 22px; margin-bottom: 24px;">Starting a New Project</h2>
+
+        <div class="code-block" style="margin-bottom: 24px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">terminal</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm"># Initialize project</span>
+mkdir my-app && cd my-app
+npm init -y
+npm install express mongoose argon2 helmet cookie-parser zod dotenv
+npm install -D typescript tsx @types/express @types/cookie-parser
+
+<span class="cm"># Get the auth module</span>
+git clone https://github.com/IamAshrafee/ModularAuth-Kit.git temp
+cp -r temp/src/auth src/auth
+rm -rf temp</code>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-bottom: 24px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">src/server.ts</span>
+          </div>
+          <div class="code-body">
+<code><span class="kw">import</span> <span class="str">'dotenv/config'</span>;
+<span class="kw">import</span> express <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> mongoose <span class="kw">from</span> <span class="str">'mongoose'</span>;
+<span class="kw">import</span> { createConfig, createAuthModule } <span class="kw">from</span> <span class="str">'./auth/index.js'</span>;
+
+<span class="kw">async function</span> <span class="fn">main</span>() {
+  <span class="kw">await</span> mongoose.<span class="fn">connect</span>(process.env.MONGODB_URI!);
+
+  <span class="kw">const</span> app = <span class="fn">express</span>();
+  app.<span class="fn">use</span>(express.<span class="fn">json</span>());
+
+  <span class="kw">const</span> config = <span class="fn">createConfig</span>({
+    session: { secure: <span class="num">false</span> },
+  });
+
+  app.<span class="fn">use</span>(<span class="str">'/auth'</span>, <span class="fn">createAuthModule</span>(config));
+
+  app.<span class="fn">listen</span>(<span class="num">3000</span>, () => console.<span class="fn">log</span>(<span class="str">'http://localhost:3000'</span>));
+}
+
+<span class="fn">main</span>();</code>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-bottom: 24px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">.env</span>
+          </div>
+          <div class="code-body">
+<code>MONGODB_URI=<span class="str">mongodb://localhost:27017/myapp</span>
+SESSION_SECRET=<span class="str">your-random-64-char-secret-here</span></code>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- AI Agent -->
+      <div class="gs-panel" id="ai">
+
+        <h2 style="font-size: 22px; margin-bottom: 24px;">Let Your AI Agent Do It</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+          If you use an AI coding agent (Cursor, GitHub Copilot, Gemini, etc.), 
+          you can automate the entire integration:
+        </p>
+
+        <div class="steps" style="grid-template-columns: 1fr; gap: 20px; margin-bottom: 32px;">
+          <div class="step" style="display: flex; gap: 16px; align-items: start;">
+            <div class="step-number" style="flex-shrink: 0;">1</div>
+            <div>
+              <h3 style="font-size: 15px;">Copy the auth folder</h3>
+              <p>Copy <code>src/auth/</code> from the <a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank">repository</a> into your project.</p>
+            </div>
+          </div>
+          <div class="step" style="display: flex; gap: 16px; align-items: start;">
+            <div class="step-number" style="flex-shrink: 0;">2</div>
+            <div>
+              <h3 style="font-size: 15px;">Give the AI the prompt</h3>
+              <p>Copy the entire contents of <a href="https://github.com/IamAshrafee/ModularAuth-Kit/blob/main/docs/ai-integration/agent-prompt.md" target="_blank">agent-prompt.md</a> and paste it to your AI agent.</p>
+            </div>
+          </div>
+          <div class="step" style="display: flex; gap: 16px; align-items: start;">
+            <div class="step-number" style="flex-shrink: 0;">3</div>
+            <div>
+              <h3 style="font-size: 15px;">Answer a few questions</h3>
+              <p>The AI will analyze your project, ask what features you need, then handle the rest — installing deps, configuring, mounting, and verifying.</p>
+            </div>
+          </div>
+        </div>
+
+        <a href="https://github.com/IamAshrafee/ModularAuth-Kit/blob/main/docs/ai-integration/agent-prompt.md" class="btn btn-primary" target="_blank" rel="noopener">Get the AI Prompt →</a>
+
+      </div>
+
+      <!-- Verify Section (shared) -->
+      <div style="margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--border);" class="fade-up">
+        <h2 style="font-size: 22px; margin-bottom: 24px;">Verify It Works</h2>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">terminal</span>
+          </div>
+          <div class="code-body">
+<code><span class="cm"># Start your server</span>
+npm run dev
+
+<span class="cm"># Register</span>
+curl -X POST http://localhost:3000/auth/register \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"email":"test@example.com","password":"Test1234!"}'</span> \
+  -c cookies.txt
+
+<span class="cm"># Login</span>
+curl -X POST http://localhost:3000/auth/login \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"identifier":"test@example.com","password":"Test1234!"}'</span> \
+  -c cookies.txt
+
+<span class="cm"># Get profile (authenticated)</span>
+curl http://localhost:3000/auth/me -b cookies.txt</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Protect Your Routes -->
+      <div style="margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--border);" class="fade-up">
+        <h2 style="font-size: 22px; margin-bottom: 16px;">Protect Your Own Routes</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+          Use the <code>requireAuth</code> middleware to protect any route in your app:
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">your routes</span>
+          </div>
+          <div class="code-body">
+<code><span class="kw">import</span> { requireAuth } <span class="kw">from</span> <span class="str">'./auth/http/middleware/require-auth.js'</span>;
+
+<span class="cm">// Protected — only logged-in users</span>
+app.<span class="fn">get</span>(<span class="str">'/api/dashboard'</span>, requireAuth, (req, res) => {
+  res.<span class="fn">json</span>({ userId: req.user!._id });
+});
+
+<span class="cm">// Public — anyone can access</span>
+app.<span class="fn">get</span>(<span class="str">'/api/health'</span>, (req, res) => {
+  res.<span class="fn">json</span>({ status: <span class="str">'ok'</span> });
+});</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enable More Features -->
+      <div style="margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--border);" class="fade-up">
+        <h2 style="font-size: 22px; margin-bottom: 16px;">Enable More Features</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+          When you're ready, enable additional features by adding config options:
+        </p>
+        <div class="code-block" style="margin-bottom: 32px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-filename">full config example</span>
+          </div>
+          <div class="code-body">
+<code><span class="kw">const</span> config = <span class="fn">createConfig</span>({
+  session: { secure: process.env.NODE_ENV === <span class="str">'production'</span> },
+
+  <span class="cm">// Enable features as needed:</span>
+  passwordRecovery: { enabled: <span class="num">true</span> },
+  emailVerification: { enabled: <span class="num">true</span> },
+  loginHistory: { enabled: <span class="num">true</span> },
+  sessionManagement: { enabled: <span class="num">true</span> },
+
+  <span class="cm">// Username support:</span>
+  registration: {
+    fields: { username: { enabled: <span class="num">true</span>, required: <span class="num">true</span> } },
+  },
+  login: {
+    identifiers: [<span class="str">'email'</span>, <span class="str">'username'</span>],
+    allowGoogleOAuth: <span class="num">true</span>,
+  },
+
+  <span class="cm">// Security:</span>
+  security: {
+    accountLockout: { enabled: <span class="num">true</span> },
+  },
+
+  email: { adapter: <span class="str">'console'</span> }, <span class="cm">// 'nodemailer' in prod</span>
+});</code>
+          </div>
+        </div>
+
+        <div class="hero-actions" style="justify-content: flex-start;">
+          <a href="features.html" class="btn btn-secondary">Explore Features →</a>
+          <a href="docs.html" class="btn btn-secondary">Read the Docs →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-text">Built by <a href="https://github.com/IamAshrafee" target="_blank" rel="noopener">Ashrafee</a> · MIT License</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/IamAshrafee/ModularAuth-Kit" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="features.html">Features</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
