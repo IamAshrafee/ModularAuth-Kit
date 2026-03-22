@@ -176,11 +176,17 @@ export function createAuthController(deps: AuthControllerDeps) {
     async changePassword(req: Request, res: Response): Promise<void> {
       try {
         const { currentPassword, newPassword } = req.body;
+        const meta: RequestMeta = {
+          ip: req.ip ?? 'unknown',
+          userAgent: req.get('user-agent') ?? 'unknown',
+          device: parseDevice(req.get('user-agent') ?? ''),
+        };
         await authService.changePassword(
           req.user!._id.toString(),
           currentPassword,
           newPassword,
           config,
+          meta,
         );
         clearSessionCookie(res, config);
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.PASSWORD_CHANGED, null);

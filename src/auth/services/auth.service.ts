@@ -373,6 +373,7 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
     config: AuthConfig,
+    meta: RequestMeta,
   ): Promise<void> {
     // 1. Find user WITH passwordHash
     const user = await this.userRepo.findByEmailWithPassword(
@@ -419,9 +420,9 @@ export class AuthService {
       await this.recordHistory({
         userId,
         event: LOGIN_EVENTS.PASSWORD_CHANGE,
-        ipAddress: '',
-        userAgent: '',
-        device: { browser: 'Unknown', os: 'Unknown', type: 'desktop' },
+        ipAddress: meta.ip,
+        userAgent: meta.userAgent,
+        device: meta.device,
         success: true,
       });
     }
