@@ -1,186 +1,216 @@
 # ModularAuth-Kit — AI Agent Integration Prompt
 
 > **Copy this entire file and paste it as a prompt to your AI coding agent.**
-> The agent will guide you through integrating authentication into your project.
+> The agent will learn your project first, then guide you through integrating authentication.
 
 ---
 
 ## Your Role
 
-You are integrating **ModularAuth-Kit** — a pre-built authentication module — into the user's existing Express.js + TypeScript project. The `src/auth/` folder has already been copied into their project.
+You are integrating **ModularAuth-Kit** — a pre-built authentication module — into the user's existing (or new) project. The `src/auth/` folder has already been copied into their project.
 
-Your job is to:
-1. Ask the user questions to understand their needs
-2. Install dependencies
-3. Configure the auth module
-4. Wire it into their existing Express app
-5. Create/update the `.env` file
-6. Verify everything works
+**Your approach must be: Learn First → Ask Smart Questions → Integrate → Verify.**
 
-Follow each step below in order. Do not skip steps.
+Never assume anything about the project. Discover everything by reading files.
 
 ---
 
-## Step 1: Understand the Project
+## Phase 1: Learn the Project (MANDATORY — Do This Before Anything Else)
 
-First, scan the user's project to understand their setup:
+Before asking the user a single question, silently read and understand their project.
 
-- Read `package.json` to check existing dependencies
-- Read `tsconfig.json` to check TypeScript configuration
-- Find their main Express app file (e.g., `app.ts`, `server.ts`, `index.ts`)
-- Identify where routes are mounted
-- Check if they already have a `.env` file
+### 1.1 Read Core Files
 
-Then ask the user:
+Read these files (if they exist) and take note of everything:
 
-> **I've scanned your project. Before I set up authentication, I need to know a few things:**
->
-> 1. **Which features do you need?** (answer yes/no for each)
->    - Password recovery (forgot password / reset password)?
->    - Email verification (OTP verification after registration)?
->    - Google OAuth login (Login with Google)?
->    - Login history tracking?
->    - Session management (list/revoke devices)?
->    - Account lockout (lock after failed attempts)?
->    - Username support (login with username instead of just email)?
->
-> 2. **What extra user fields do you need?** (optional)
->    - Full name?
->    - First name / Last name?
->    - Username?
->
-> 3. **What path should auth routes be mounted on?**
->    - Default: `/auth` (e.g., `/auth/login`, `/auth/register`)
->    - Or custom: `/api/auth`, `/api/v1/auth`, etc.
->
-> 4. **What's your MongoDB connection string?**
->    - Local: `mongodb://localhost:27017/your-db-name`
->    - Atlas: `mongodb+srv://...`
-
-Wait for the user to answer before proceeding.
-
----
-
-## Step 2: Collect Feature-Specific Info
-
-Based on the user's answers in Step 1, ask follow-up questions ONLY for features they enabled:
-
-### If Google OAuth = Yes:
-> I need your Google OAuth credentials:
-> - `GOOGLE_CLIENT_ID` — from Google Cloud Console
-> - `GOOGLE_CLIENT_SECRET` — from Google Cloud Console
-> - `GOOGLE_CALLBACK_URL` — e.g., `http://localhost:3000/auth/google/callback`
->
-> (If you don't have these yet, I'll set up placeholder values and you can fill them in later.)
-
-### If Password Recovery or Email Verification = Yes:
-> For sending emails, which adapter do you want?
-> - **Console** (development) — emails printed to terminal, no setup needed
-> - **Nodemailer** (production) — needs SMTP credentials
->
-> If Nodemailer: I need `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
-
-### If Account Lockout = Yes:
-> Account lockout settings:
-> - Max failed attempts before lock? (default: 5)
-> - Lock duration in minutes? (default: 15)
-
-Wait for the user to answer before proceeding.
-
----
-
-## Step 3: Install Dependencies
-
-Run the following command to install required dependencies (skip any already in package.json):
-
-```bash
-npm install express mongoose argon2 helmet cookie-parser zod dotenv
-npm install -D @types/express @types/cookie-parser
+```
+package.json           → What deps are already installed? Express version?
+tsconfig.json          → Module system (ESM/CJS)? Strict mode? Paths?
+.env / .env.example    → What env vars already exist? Is MONGODB_URI there?
 ```
 
-If the user enabled Google OAuth, no extra packages are needed (direct HTTP implementation).
+### 1.2 Find the Express App
 
-If the user chose Nodemailer, also install:
-```bash
-npm install nodemailer
-npm install -D @types/nodemailer
+Search for the main Express setup file. It's usually one of:
+- `src/app.ts`, `src/server.ts`, `src/index.ts`
+- `app.ts`, `server.ts`, `index.ts`
+
+Read it and identify:
+- [ ] Where is `express()` created?
+- [ ] Where is `app.use(express.json())` called?
+- [ ] Is there an existing `mongoose.connect()` call?
+- [ ] Is there an existing `cookie-parser` setup?
+- [ ] Is there an existing `helmet()` setup?
+- [ ] Is there a custom error handler at the bottom?
+- [ ] What port does the server listen on?
+- [ ] Are there existing route mounts? (e.g., `app.use('/api', ...)`)
+
+### 1.3 Understand the Folder Structure
+
 ```
+List: src/ directory (top-level)
+```
+
+Determine:
+- Is this a new/empty project or an established one with existing routes?
+- Where do they put routes, controllers, middleware?
+- Is there an existing auth system that needs replacement?
+
+### 1.4 Check for Conflicts
+
+Look for things that could conflict:
+- Existing `/auth` routes → will our module collide?
+- Existing session middleware → do they already have express-session?
+- Existing `User` model → will Mongoose have schema conflicts?
+- Existing `cookie-parser` → avoid duplicating middleware
+
+### 1.5 Build a Mental Model
+
+After reading, you should know:
+
+| Question | Answer |
+|---|---|
+| Project type | New project / Existing with routes |
+| Has MongoDB connected? | Yes (skip DB setup) / No (need it) |
+| Has express.json()? | Yes (skip) / No (add it) |
+| Has cookie-parser? | Yes (skip) / No (installed by auth module) |
+| Has helmet? | Yes (skip) / No (installed by auth module) |
+| Module system | ESM / CJS |
+| Existing auth routes? | Yes (warn about collision) / No |
+| Missing dependencies | List exactly what's missing |
 
 ---
 
-## Step 4: Create/Update .env
+## Phase 2: Ask Smart Questions (Fewer Questions = Better UX)
 
-Add the following to the user's **existing** `.env` file. Do NOT create a separate env file:
+Now you know the project. Ask the user ONLY what you can't determine from the code.
+
+### Present Your Understanding First
+
+> **I've analyzed your project. Here's what I found:**
+>
+> - **Express app:** `src/server.ts` (Express 5.x)
+> - **MongoDB:** Already connected via `mongoose.connect()` ✅
+> - **Missing deps:** `argon2`, `zod` (need to install)
+> - **Existing routes:** `/api/products`, `/api/orders`
+> - **No auth system found** — clean integration
+>
+> **I need a few answers to configure authentication:**
+>
+> 1. **Which features?** (yes/no each)
+>    - [ ] Password recovery (forgot/reset password)?
+>    - [ ] Email verification (OTP after registration)?
+>    - [ ] Google OAuth (login with Google)?
+>    - [ ] Login history tracking?
+>    - [ ] Session management (list/revoke devices)?
+>    - [ ] Account lockout (lock after failed attempts)?
+>    - [ ] Username support (register/login with username)?
+>
+> 2. **Mount path?** Default is `/auth` → endpoints like `/auth/login`
+>    - Or do you want `/api/auth`? Something else?
+
+**DO NOT ask about:**
+- MongoDB URI (you already know if they have it)
+- Port (you already read it)
+- Dependencies they already have
+- Things you can determine from the code
+
+### Ask Feature-Specific Follow-ups (Only If Needed)
+
+**If Google OAuth = Yes:**
+> I need your Google OAuth credentials (or I'll add placeholders):
+> - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`
+
+**If Email Features = Yes:**
+> For emails — use `console` adapter (prints to terminal, great for dev) or `nodemailer` (needs SMTP)?
+
+**If Account Lockout = Yes:**
+> Lockout settings — defaults are 5 attempts, 15-minute lock. Want to change?
+
+---
+
+## Phase 3: Install Only What's Missing
+
+Based on Phase 1 analysis, install ONLY dependencies that aren't already in `package.json`:
 
 ```bash
-# Session (always required — the only truly new env var)
-SESSION_SECRET=<generate a random 64-character hex string>
+# Example — skip what's already installed:
+npm install argon2 zod          # only these were missing
 ```
 
-> **Important:** Do NOT add `MONGODB_URI` if the project already has it. The auth module reuses the active Mongoose connection automatically.
+Full dependency list (install only what's missing):
+- `argon2` — password hashing
+- `cookie-parser` — cookie parsing
+- `dotenv` — env var loading
+- `express` — web framework
+- `helmet` — security headers
+- `mongoose` — MongoDB ODM
+- `zod` — input validation
+- `nodemailer` — only if user chose nodemailer adapter
 
-Add feature-specific variables ONLY if enabled by the user:
+---
 
+## Phase 4: Add Environment Variables
+
+Add to the user's **existing** `.env` file. Do NOT create a separate file.
+
+**Always add:**
 ```bash
-# If Google OAuth enabled:
-GOOGLE_CLIENT_ID=<from user>
-GOOGLE_CLIENT_SECRET=<from user>
-GOOGLE_CALLBACK_URL=<from user>
+SESSION_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
+```
 
-# If Nodemailer enabled:
+**Do NOT add `MONGODB_URI`** if the project already has it.
+
+**Add feature-specific vars only if enabled:**
+```bash
+# Google OAuth (only if enabled)
+GOOGLE_CLIENT_ID=<from user or placeholder>
+GOOGLE_CLIENT_SECRET=<from user or placeholder>
+GOOGLE_CALLBACK_URL=http://localhost:<PORT>/auth/google/callback
+
+# Nodemailer (only if using nodemailer adapter)
 SMTP_HOST=<from user>
-SMTP_PORT=<from user>
+SMTP_PORT=587
 SMTP_USER=<from user>
 SMTP_PASS=<from user>
 EMAIL_FROM=<from user>
 ```
 
-Generate the SESSION_SECRET with:
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
 ---
 
-## Step 5: Configure and Mount the Auth Module
+## Phase 5: Integrate Into the Existing App
 
-Modify the user's main Express app file. The integration looks like this:
+Modify the user's **existing** Express app file. Do NOT rewrite it.
+
+### Rules
+
+1. **Add imports at the top** (with their existing imports)
+2. **Place auth mount AFTER** `express.json()` and `cookie-parser`
+3. **Place auth mount BEFORE** custom error handlers
+4. **Do NOT duplicate** middleware they already have (cookie-parser, helmet, etc.)
+5. **Do NOT touch** their existing routes or business logic
+6. **Preserve** everything that already exists in the file
+
+### What to Add (Typically 3-5 Lines)
 
 ```typescript
-import 'dotenv/config';
-import express from 'express';
+// Add to imports
 import { createConfig, createAuthModule } from './auth/index.js';
-import { connectDatabase } from './auth/adapters/database/mongodb.adapter.js';
 
-// ... existing imports ...
+// Add after express.json() middleware, before routes
+const authConfig = createConfig({
+  session: {
+    secure: process.env.NODE_ENV === 'production',
+  },
+  // ... features based on user's answers
+});
 
-async function bootstrap() {
-  // Connect to MongoDB (add this if not already present)
-  await connectDatabase(process.env.MONGODB_URI!);
-
-  const app = express();
-  app.use(express.json());
-
-  // Auth configuration
-  const authConfig = createConfig({
-    session: {
-      secure: process.env.NODE_ENV === 'production',
-    },
-    // ... add feature configs based on user's answers ...
-  });
-
-  // Mount auth routes
-  app.use('<mount-path>', createAuthModule(authConfig));
-
-  // ... rest of user's existing routes ...
-
-  app.listen(process.env.PORT ?? 3000);
-}
+app.use('/auth', createAuthModule(authConfig));  // or user's chosen mount path
 ```
 
 ### Config Builder Reference
 
-Build the config object based on Step 1 answers:
+Build the config based on Phase 2 answers:
 
 ```typescript
 const authConfig = createConfig({
@@ -188,149 +218,107 @@ const authConfig = createConfig({
     secure: process.env.NODE_ENV === 'production',
   },
 
-  // If user wants username support:
+  // If username enabled:
   registration: {
     fields: {
       username: { enabled: true, required: true },
       fullName: { enabled: true, required: false },
-      // ... other fields based on user's answer
     },
   },
 
-  // If user wants username login:
+  // If username login enabled:
   login: {
     identifiers: ['email', 'username'],
-    allowGoogleOAuth: false, // true if Google OAuth enabled
+    allowGoogleOAuth: false,  // true if Google OAuth enabled
   },
 
-  // If password recovery enabled:
+  // Feature flags — only include what user said Yes to:
   passwordRecovery: { enabled: true },
-
-  // If email verification enabled:
-  emailVerification: {
-    enabled: true,
-    requiredForLogin: false, // ask user if they want this
-  },
-
-  // If login history enabled:
+  emailVerification: { enabled: true, requiredForLogin: false },
   loginHistory: { enabled: true },
-
-  // If session management enabled:
   sessionManagement: { enabled: true },
 
-  // Security settings:
+  // Security:
   security: {
-    csrfProtection: process.env.NODE_ENV === 'production',
-    // If account lockout enabled:
     accountLockout: {
       enabled: true,
-      maxFailedAttempts: 5,  // or user's custom value
-      lockDurationMinutes: 15, // or user's custom value
+      maxFailedAttempts: 5,
+      lockDurationMinutes: 15,
     },
   },
 
-  // If using nodemailer:
-  email: { adapter: 'nodemailer' },
-  // If using console (dev):
-  email: { adapter: 'console' },
+  // Email adapter:
+  email: { adapter: 'console' },  // or 'nodemailer'
 });
 ```
 
-**Important rules when integrating:**
-- Place `createAuthModule()` AFTER `express.json()` middleware
-- Place it BEFORE any custom error handlers
-- If the user has an existing MongoDB connection, reuse it — don't create a second one
-- If the user already has `cookie-parser`, remove the duplicate
-- Preserve all of the user's existing routes and middleware
-
 ---
 
-## Step 6: Update tsconfig.json
+## Phase 6: Verify
 
-Ensure these compiler options are set:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "resolveJsonModule": true,
-    "declaration": true,
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*"]
-}
-```
-
-Only modify settings that are missing or conflicting. Don't overwrite the user's existing config.
-
----
-
-## Step 7: Verify
-
-Run these checks:
+Run these checks in order. Stop and fix any failures before continuing.
 
 ```bash
-# 1. TypeScript compilation
+# 1. TypeScript compilation — must be zero errors
 npx tsc --noEmit
-# Must show zero errors
 
-# 2. Start server
+# 2. Start the server — must start without crashes
 npm run dev
-# Must start without errors
 
 # 3. Test registration
-curl -X POST http://localhost:<PORT>/<mount-path>/register \
+curl -X POST http://localhost:<PORT>/<path>/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test1234!"}' \
   -c cookies.txt
 
 # 4. Test login
-curl -X POST http://localhost:<PORT>/<mount-path>/login \
+curl -X POST http://localhost:<PORT>/<path>/login \
   -H "Content-Type: application/json" \
   -d '{"identifier":"test@example.com","password":"Test1234!"}' \
   -c cookies.txt
 
-# 5. Test authenticated route
-curl http://localhost:<PORT>/<mount-path>/me -b cookies.txt
+# 5. Test authenticated endpoint
+curl http://localhost:<PORT>/<path>/me -b cookies.txt
 ```
 
+All 5 checks must pass before reporting success.
+
 ---
 
-## Step 8: Summary
+## Phase 7: Report to the User
 
-After everything is working, give the user a summary:
+Give the user a clear summary of what was done:
 
-> **✅ Authentication is set up! Here's what's available:**
+> **✅ Authentication integrated!**
 >
+> **What I did:**
+> - Installed: `argon2`, `zod` (2 new packages)
+> - Added `SESSION_SECRET` to `.env`
+> - Added 5 lines to `src/server.ts`
+> - No changes to your existing routes or models
+>
+> **Available endpoints:**
 > | Endpoint | Description |
 > |---|---|
-> | POST `<path>/register` | Create an account |
-> | POST `<path>/login` | Login |
-> | POST `<path>/logout` | Logout |
-> | GET `<path>/me` | Get profile |
-> | ... | (list all enabled endpoints) |
+> | POST `/auth/register` | Create account |
+> | POST `/auth/login` | Login |
+> | ... | |
 >
-> **Next steps:**
-> - Check out the docs in `src/auth/` for customization
-> - For production: set `NODE_ENV=production`, use HTTPS, set real SESSION_SECRET
-> - To protect your own routes, use the `requireAuth` middleware:
->   ```typescript
->   import { requireAuth } from './auth/http/middleware/require-auth.js';
->   app.get('/api/protected', requireAuth, handler);
->   ```
+> **To protect your routes:**
+> ```typescript
+> import { requireAuth } from './auth/http/middleware/require-auth.js';
+> app.get('/api/protected', requireAuth, handler);
+> ```
 
 ---
 
-## Important Notes for the AI Agent
+## Important Rules for the AI Agent
 
-- **Never expose `passwordHash`** in any API response
-- **Use identical error messages** for "user not found" and "wrong password" (enumeration protection)
-- **Don't modify files inside `src/auth/`** — configure through `createConfig()` only
-- If the user's project uses CommonJS (`require`), they need to switch to ESM or use dynamic `import()`
-- The auth module requires MongoDB — it won't work with SQL databases without implementing new repository adapters
+1. **Never modify files inside `src/auth/`** — configure through `createConfig()` only
+2. **Never expose `passwordHash`** in any API response
+3. **Use identical error messages** for "user not found" and "wrong password"
+4. **Don't create duplicate middleware** — check what already exists first
+5. **Don't ask questions you can answer from the code** — read files first
+6. **The auth module reuses the active Mongoose connection** — no extra DB setup needed
+7. If the user's project uses CommonJS, they need to switch to ESM or use dynamic `import()`
+8. The auth module requires MongoDB — it won't work with SQL databases without custom repository adapters
