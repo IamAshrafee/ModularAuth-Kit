@@ -25,6 +25,11 @@ async function bootstrap(): Promise<void> {
     },
     security: {
       csrfProtection: false, // Disable CSRF for curl testing
+      accountLockout: {
+        enabled: true,
+        maxFailedAttempts: 3,
+        lockDurationMinutes: 1,
+      },
     },
     passwordRecovery: {
       enabled: true, // Enable for development testing

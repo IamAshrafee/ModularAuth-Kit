@@ -995,7 +995,7 @@ Conditionally mount session management routes when `config.sessionManagement.ena
 ---
 
 ## Phase 15: Account Lockout
-`[ ]` **Status: Not Started**
+`[x]` **Status: Complete** ✅
 
 ### Goal
 Implement temporary account lockout after N failed login attempts.
