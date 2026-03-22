@@ -1103,7 +1103,7 @@ app.use(createAuthRouter({ /* optional overrides */ }));
 ---
 
 ## Phase 18: User-Facing Documentation
-`[ ]` **Status: Not Started**
+`[x]` **Status: Complete** ✅
 
 ### Goal
 Complete all remaining user-facing docs in `docs/`.
