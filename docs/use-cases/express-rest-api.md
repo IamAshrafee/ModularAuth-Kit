@@ -23,8 +23,8 @@ my-api/
 ## Step 1: Install Dependencies
 
 ```bash
-npm install express mongoose bcrypt helmet cookie-parser zod dotenv
-npm install -D typescript @types/express @types/bcrypt @types/cookie-parser tsx
+npm install express mongoose argon2 helmet cookie-parser zod dotenv
+npm install -D typescript @types/express @types/cookie-parser tsx
 ```
 
 ## Step 2: Environment Variables
@@ -117,5 +117,5 @@ With this minimal setup:
 - ✅ `GET /auth/me` — Get current user profile
 - ✅ `POST /auth/change-password` — Change password
 - ✅ Session-based auth with httpOnly cookies
-- ✅ bcrypt password hashing
+- ✅ argon2id password hashing
 - ✅ Helmet security headers

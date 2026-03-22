@@ -56,7 +56,7 @@ When disabled, routes are not mounted and no related code runs.
 
 ```json
 {
-  "bcrypt": "^5.x",
+  "argon2": "^0.44.x",
   "cookie-parser": "^1.x",
   "dotenv": "^16.x",
   "express": "^4.x",
@@ -148,5 +148,5 @@ src/auth/
 2. Login errors use identical messages (enumeration protection)
 3. Sessions use httpOnly, signed, SameSite cookies
 4. Tokens are hashed (SHA-256) before database storage
-5. bcrypt with cost factor 12 for password hashing
+5. argon2id with OWASP-recommended parameters for password hashing
 6. Session IDs are rotated after login (fixation prevention)

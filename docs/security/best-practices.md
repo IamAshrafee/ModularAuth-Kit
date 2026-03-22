@@ -37,7 +37,7 @@ Production security checklist for ModularAuth-Kit.
 | OWASP Risk | Mitigation |
 |---|---|
 | A01: Broken Access Control | Session-based auth, requireAuth middleware |
-| A02: Cryptographic Failures | bcrypt hashing, token hashing, signed cookies |
+| A02: Cryptographic Failures | argon2id hashing, token hashing, signed cookies |
 | A03: Injection | Zod validation, parameterized Mongoose queries |
 | A04: Insecure Design | Repository pattern, service layer, config validation |
 | A05: Security Misconfiguration | Helmet.js, secure defaults, config validation |

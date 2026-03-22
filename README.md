@@ -3,7 +3,7 @@
 > Drop-in authentication module for Express.js + MongoDB + TypeScript.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-000?logo=express)](https://expressjs.com/)
+[![Express](https://img.shields.io/badge/Express-5.x-000?logo=express)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb)](https://mongoosejs.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -11,7 +11,7 @@
 
 | Feature | Description |
 |---|---|
-| 🔐 **Email/Password Auth** | Register, login, logout with bcrypt hashing |
+| 🔐 **Email/Password Auth** | Register, login, logout with argon2id hashing |
 | 📱 **Session Management** | Server-side sessions, device listing, remote revocation |
 | 🔑 **Password Recovery** | Forgot password + reset with secure tokens |
 | ✉️ **Email Verification** | OTP-based email verification |
@@ -20,6 +20,18 @@
 | 🔒 **Account Lockout** | Temporary lock after failed attempts |
 | 📝 **Audit Logging** | Structured JSON logs for all auth events |
 | 🛡️ **OWASP Compliant** | Helmet, CSRF, enumeration protection, rate limiting |
+
+## 🤖 AI-Assisted Integration
+
+**Copy the `src/auth/` folder into your project, paste a single prompt to your AI coding agent, and it handles everything.**
+
+The AI agent will:
+1. Ask which features you need
+2. Collect your config (MongoDB URI, OAuth keys, etc.)
+3. Install dependencies, create `.env`, wire into your Express app
+4. Verify everything works
+
+👉 **[Get the AI prompt →](docs/ai-integration/agent-prompt.md)**
 
 ## Quick Start
 
@@ -86,10 +98,12 @@ All features are **disabled by default** — enable only what you need:
 
 ```typescript
 createConfig({
-  login: { identifiers: ['email', 'username'] },
+  login: {
+    identifiers: ['email', 'username'],
+    allowGoogleOAuth: true,
+  },
   passwordRecovery: { enabled: true },
   emailVerification: { enabled: true },
-  login: { allowGoogleOAuth: true },
   loginHistory: { enabled: true },
   sessionManagement: { enabled: true },
   security: {
@@ -105,11 +119,11 @@ createConfig({
 ## Tech Stack
 
 - **Runtime:** Node.js 18+
-- **Framework:** Express.js 4.x
-- **Database:** MongoDB via Mongoose 8.x
+- **Framework:** Express.js 5.x
+- **Database:** MongoDB via Mongoose 9.x
 - **Language:** TypeScript 5.x
 - **Validation:** Zod 3.x
-- **Security:** Helmet, bcrypt, cookie-parser
+- **Security:** Helmet, argon2, cookie-parser
 
 ## Documentation
 
@@ -118,7 +132,8 @@ Full documentation lives in [`docs/`](docs/README.md):
 - [Getting Started](docs/getting-started/quick-start.md)
 - [Configuration](docs/configuration/overview.md)
 - [API Reference](docs/api/overview.md)
-- [Guides](docs/guides/deployment.md)
+- [Use Case Scenarios](docs/use-cases/README.md)
+- [AI Integration Guide](docs/ai-integration/README.md)
 - [Security](docs/security/overview.md)
 
 ## Project Structure

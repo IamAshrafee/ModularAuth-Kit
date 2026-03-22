@@ -4,8 +4,8 @@
 
 | Token | Purpose | Expiry |
 |---|---|---|
-| Password Reset | Forgot-password flow | Configurable (default 1 hour) |
-| Email Verification | OTP for email verification | Configurable (default 10 minutes) |
+| Password Reset | Forgot-password flow | 15 minutes (configurable) |
+| Email Verification | OTP for email verification | 15 minutes (configurable) |
 
 ## Generation
 
@@ -28,7 +28,7 @@
 ## Security Properties
 
 - **Single-use:** Tokens are deleted after use
-- **Expiry:** Tokens automatically expire
+- **Expiry:** Tokens automatically expire (15 minutes default)
 - **Hashed storage:** Database leak doesn't expose tokens
 - **High entropy:** 256-bit randomness prevents guessing
 - **Rate limited:** Token generation endpoints are rate-limited

@@ -2,11 +2,12 @@
 
 ## Hashing
 
-- **Algorithm:** bcrypt
-- **Cost factor:** 12 (configurable)
-- **Salt:** Automatically generated per password
+- **Algorithm:** argon2id (OWASP recommended)
+- **Parameters:** Memory 19 MiB, Iterations 2, Parallelism 1
+- **Hash length:** 32 bytes
+- **Hashing time:** ~300ms per password
 
-bcrypt is designed to be slow, making brute-force attacks impractical.
+argon2id is the most secure password hashing algorithm available, resistant to both side-channel and GPU-based attacks.
 
 ## Storage
 
@@ -31,7 +32,7 @@ Configurable password policy:
 
 When a user changes their password:
 1. Old password is verified first
-2. New password is hashed with bcrypt
+2. New password is hashed with argon2id
 3. **All existing sessions are revoked** (forces re-login everywhere)
 4. A new session is created for the current device
 5. Login history records the event
@@ -41,6 +42,6 @@ When a user changes their password:
 When a user resets via forgot-password:
 1. A cryptographically random token is generated
 2. Token is stored hashed (SHA-256) in the database
-3. Token expires after the configured duration
+3. Token expires after 15 minutes (configurable)
 4. On reset: token is verified, password updated, **all sessions revoked**
 5. Token is single-use (deleted after use)

@@ -24,6 +24,7 @@ All error responses follow this format:
 | `NOT_FOUND` | 404 | Resource not found |
 | `CONFLICT` | 409 | Email or username already exists |
 | `ACCOUNT_LOCKED` | 423 | Account locked after too many failed attempts |
+| `EMAIL_NOT_VERIFIED` | 403 | Email must be verified before login |
 | `RATE_LIMITED` | 429 | Too many requests |
 | `TOKEN_INVALID` | 400 | Invalid or expired reset/verification token |
 | `TOKEN_EXPIRED` | 400 | Token has expired |

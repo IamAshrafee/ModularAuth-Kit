@@ -10,7 +10,7 @@ createConfig({
     cookieName: 'sid',
     secret: '',              // Set via SESSION_SECRET env var
     maxAge: 604800000,       // 7 days (ms)
-    idleTimeout: 86400000,   // 24 hours (ms)
+    idleTimeout: 1800000,    // 30 minutes (ms)
     rotateOnLogin: true,
     secure: true,
     sameSite: 'lax',
@@ -23,7 +23,7 @@ createConfig({
 | `cookieName` | string | `'sid'` | Session cookie name |
 | `secret` | string | `''` | Cookie signing secret (use env var) |
 | `maxAge` | number | `604800000` | Absolute session lifetime (7 days) |
-| `idleTimeout` | number | `86400000` | Inactivity timeout (24 hours) |
+| `idleTimeout` | number | `1800000` | Inactivity timeout (30 minutes) |
 | `rotateOnLogin` | boolean | `true` | Rotate session ID on login (OWASP) |
 | `secure` | boolean | `true` | Set `Secure` flag (HTTPS only) |
 | `sameSite` | string | `'lax'` | SameSite cookie attribute |

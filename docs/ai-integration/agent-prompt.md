@@ -94,8 +94,8 @@ Wait for the user to answer before proceeding.
 Run the following command to install required dependencies (skip any already in package.json):
 
 ```bash
-npm install express mongoose bcrypt helmet cookie-parser zod dotenv
-npm install -D @types/express @types/bcrypt @types/cookie-parser
+npm install express mongoose argon2 helmet cookie-parser zod dotenv
+npm install -D @types/express @types/cookie-parser
 ```
 
 If the user enabled Google OAuth, no extra packages are needed (direct HTTP implementation).

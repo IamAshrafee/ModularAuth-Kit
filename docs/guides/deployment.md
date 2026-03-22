@@ -58,8 +58,8 @@ const config = createConfig({
 - [ ] Account lockout is enabled
 - [ ] `NODE_ENV=production`
 - [ ] Error messages don't leak internal details
-- [ ] Password hashing uses bcrypt with cost factor ≥ 12
 - [ ] All cookies are httpOnly, secure, sameSite
+- [ ] Password hashing uses argon2id with OWASP parameters
 
 ## Reverse Proxy
 

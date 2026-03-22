@@ -6,7 +6,7 @@ ModularAuth-Kit implements multiple layers of defense following OWASP best pract
 
 | Layer | Implementation |
 |---|---|
-| **Password Hashing** | bcrypt with configurable cost factor (default 12) |
+| **Password Hashing** | argon2id with OWASP-recommended parameters |
 | **Session Management** | Server-side sessions, httpOnly cookies, ID rotation |
 | **CSRF Protection** | Double-submit cookie pattern |
 | **Account Lockout** | Temporary lock after N failed attempts |
