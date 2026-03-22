@@ -175,8 +175,8 @@ export interface UserDocument extends Document {
 export interface SessionDocument extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
-  token: string;
-  ip: string;
+  sessionId: string;
+  ipAddress: string;
   userAgent: string;
   device: DeviceInfo;
   lastActiveAt: Date;
@@ -206,7 +206,7 @@ export interface LoginHistoryDocument extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
   event: LoginEvent;
-  ip: string;
+  ipAddress: string;
   userAgent: string;
   device: DeviceInfo;
   success: boolean;
