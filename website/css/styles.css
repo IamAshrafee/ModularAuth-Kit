@@ -427,6 +427,7 @@ section {
 .code-body {
   padding: 20px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .code-body code {
@@ -500,6 +501,11 @@ section {
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   align-items: start;
+}
+
+.comparison > div {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .comparison-label {
