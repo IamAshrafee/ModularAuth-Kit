@@ -6,6 +6,8 @@ description: Think like a senior code reviewer — find architectural issues, an
 
 Review the codebase as a harsh but fair senior engineer. Look for things that "work" but aren't "right."
 
+First, read `dev-docs/lessons-learned.md` — these are known mistakes we've already fixed. Check that none have regressed.
+
 ## 1. Layering Violations
 
 Check the architecture boundaries:

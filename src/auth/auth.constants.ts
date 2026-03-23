@@ -82,6 +82,7 @@ export const MESSAGES = {
   SESSION_NOT_FOUND: 'Session not found',
   SAME_PASSWORD: 'New password must be different from current password',
   CURRENT_PASSWORD_INCORRECT: 'Current password is incorrect',
+  NO_PASSWORD_SET: 'Cannot change password — account uses external login only',
 } as const;
 
 // ============================================================================
@@ -130,6 +131,8 @@ export const DEFAULTS = {
   RATE_LIMIT_REGISTER_MAX_ATTEMPTS: 5,
   RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS: 900_000,  // 15 minutes
   RATE_LIMIT_FORGOT_PASSWORD_MAX_ATTEMPTS: 3,
+  RATE_LIMIT_CHANGE_PASSWORD_WINDOW_MS: 900_000,  // 15 minutes
+  RATE_LIMIT_CHANGE_PASSWORD_MAX_ATTEMPTS: 5,
 
   // Email
   EMAIL_ADAPTER: 'console' as const,

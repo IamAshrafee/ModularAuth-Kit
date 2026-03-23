@@ -256,16 +256,18 @@ curl -X PATCH http://localhost:3000/auth/me \
 
 ## POST /auth/change-password
 
-Change the current user's password. Revokes all sessions (forces re-login).
+Change the current user's password. Revokes all other sessions but keeps the current session alive.
 
 **Auth required:** ✅ Yes
+
+**Rate limited:** ✅ Yes (5 attempts per 15 minutes)
 
 **Request body:**
 
 | Field | Type | Required |
 |---|---|---|
 | `currentPassword` | string | ✅ |
-| `newPassword` | string | ✅ |
+| `newPassword` | string | ✅ (must differ from current) |
 
 **Success (200):**
 
@@ -277,15 +279,14 @@ Change the current user's password. Revokes all sessions (forces re-login).
 }
 ```
 
-**Response headers:** Cookie cleared (all sessions revoked)
-
 **Errors:**
 
 | Code | Status | When |
 |---|---|---|
-| `VALIDATION_ERROR` | 400 | Missing fields or weak password |
+| `VALIDATION_ERROR` | 400 | Missing fields, weak password, same as current password, or OAuth-only account |
 | `UNAUTHORIZED` | 401 | No valid session |
 | `INVALID_CREDENTIALS` | 401 | Current password is wrong |
+| `RATE_LIMITED` | 429 | Too many attempts |
 
 **Example:**
 

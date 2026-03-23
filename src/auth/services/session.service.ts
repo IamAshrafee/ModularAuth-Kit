@@ -194,6 +194,18 @@ export class SessionService {
   }
 
   // --------------------------------------------------------------------------
+  // revokeAllByUserIdExcept
+  // --------------------------------------------------------------------------
+
+  /**
+   * Revoke all sessions for a user except one (typically the current session).
+   * Used on password change to keep the user logged in on the current device.
+   */
+  async revokeAllByUserIdExcept(userId: string, exceptSessionId: string): Promise<void> {
+    await this.sessionRepo.deleteByUserIdExcept(userId, exceptSessionId);
+  }
+
+  // --------------------------------------------------------------------------
   // getActiveSessions
   // --------------------------------------------------------------------------
 

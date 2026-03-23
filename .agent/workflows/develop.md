@@ -28,6 +28,8 @@ Apply the patterns and best practices from the skill to your implementation.
 ### 4. Read Architecture & Convention Docs
 Read the linked dev-docs for the current phase (architecture docs, ADRs, conventions). Follow these patterns exactly.
 
+Also read `dev-docs/lessons-learned.md` — these are known mistakes to avoid.
+
 ### 5. Implement the Code
 Create/modify the files listed in the phase. Follow:
 - `dev-docs/conventions/coding-standards.md` for naming, imports, patterns

@@ -6,6 +6,8 @@ description: Audit code quality — checks TypeScript strictness, error handling
 
 Review the auth module for code quality, consistency, and maintainability.
 
+Read `dev-docs/lessons-learned.md` first — verify none of the documented issues have regressed.
+
 // turbo-all
 
 ## 1. TypeScript Strictness

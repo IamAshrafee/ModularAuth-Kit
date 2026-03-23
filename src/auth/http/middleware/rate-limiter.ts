@@ -10,7 +10,7 @@ import type { AuthConfig } from '../../auth.types.js';
 import { sendError } from '../../utils/api-response.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES } from '../../auth.constants.js';
 
-type RateLimitEndpoint = 'login' | 'register' | 'forgotPassword';
+type RateLimitEndpoint = 'login' | 'register' | 'forgotPassword' | 'changePassword';
 
 /**
  * Create a rate limiter middleware for the given endpoint.

@@ -42,6 +42,10 @@ export class MongoSessionRepository implements ISessionRepository {
     await SessionModel.deleteMany({ userId });
   }
 
+  async deleteByUserIdExcept(userId: string, exceptSessionId: string): Promise<void> {
+    await SessionModel.deleteMany({ userId, sessionId: { $ne: exceptSessionId } });
+  }
+
   async countByUserId(userId: string): Promise<number> {
     return SessionModel.countDocuments({ userId });
   }

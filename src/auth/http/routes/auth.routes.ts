@@ -123,6 +123,7 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   router.post(
     '/change-password',
     requireAuth,
+    createRateLimiter(config, 'changePassword'),
     validate(changePasswordSchema),
     authController.changePassword,
   );

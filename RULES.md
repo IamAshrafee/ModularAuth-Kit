@@ -2,6 +2,12 @@
 
 These rules apply to all AI agents working on this project.
 
+## Project Status — Pre-Launch (remove after v1.0 release)
+- This project is **not yet published or launched**
+- **Breaking changes are allowed** — do not worry about backwards compatibility
+- Always optimize for the **best possible design** — if something should be restructured, renamed, or rethought, do it
+- This rule overrides any workflow step that says "check backwards compatibility"
+
 ## Context Loading (ALWAYS DO FIRST)
 1. **Always read `dev-docs/ROADMAP.md` first** when starting any development work. Identify the current phase before writing any code.
 2. **Always read the relevant architecture docs** linked in the current phase's "Depends On" section before implementing.

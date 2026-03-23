@@ -31,11 +31,13 @@ Configurable password policy:
 ## Password Change
 
 When a user changes their password:
-1. Old password is verified first
-2. New password is hashed with argon2id
-3. **All existing sessions are revoked** (forces re-login everywhere)
-4. A new session is created for the current device
-5. Login history records the event
+1. OAuth-only users (no password set) are blocked with a clear error
+2. Old password is verified first
+3. New password is checked against the old one — **same-password reuse is rejected**
+4. New password is validated against the configured policy
+5. New password is hashed with argon2id
+6. **All other sessions are revoked** — the current session stays active
+7. Login history records the event (if enabled)
 
 ## Password Reset
 
@@ -43,5 +45,6 @@ When a user resets via forgot-password:
 1. A cryptographically random token is generated
 2. Token is stored hashed (SHA-256) in the database
 3. Token expires after 15 minutes (configurable)
-4. On reset: token is verified, password updated, **all sessions revoked**
-5. Token is single-use (deleted after use)
+4. On reset: token is verified, new password is checked against the old one (same-password reuse rejected)
+5. Password is updated, **all sessions revoked**
+6. Token is single-use (marked as used after verification)

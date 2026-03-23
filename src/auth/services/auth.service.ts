@@ -383,13 +383,33 @@ export class AuthService {
     data: UpdateProfileDto,
     config: AuthConfig,
   ): Promise<UserDocument> {
-    // Validate that only enabled fields are being updated
+    const fields = config.registration.fields;
+
+    // Guard all disabled fields — reject updates to fields the developer hasn't enabled
+    if (data.username !== undefined && !fields.username.enabled) {
+      throw new ValidationError([
+        { field: 'username', message: 'Username field is not enabled' },
+      ]);
+    }
+    if (data.fullName !== undefined && !fields.fullName.enabled) {
+      throw new ValidationError([
+        { field: 'fullName', message: 'Full name field is not enabled' },
+      ]);
+    }
+    if (data.firstName !== undefined && !fields.firstName.enabled) {
+      throw new ValidationError([
+        { field: 'firstName', message: 'First name field is not enabled' },
+      ]);
+    }
+    if (data.lastName !== undefined && !fields.lastName.enabled) {
+      throw new ValidationError([
+        { field: 'lastName', message: 'Last name field is not enabled' },
+      ]);
+    }
+
+    // Normalize username (consistent with register)
     if (data.username !== undefined) {
-      if (!config.registration.fields.username.enabled) {
-        throw new ValidationError([
-          { field: 'username', message: 'Username field is not enabled' },
-        ]);
-      }
+      data.username = data.username.toLowerCase().trim();
 
       // Check username uniqueness
       const existing = await this.userRepo.findByUsername(data.username);
@@ -422,17 +442,27 @@ export class AuthService {
     userId: string,
     currentPassword: string,
     newPassword: string,
+    currentSessionId: string | undefined,
     config: AuthConfig,
     meta: RequestMeta,
   ): Promise<void> {
-    // 1. Find user WITH passwordHash — single query using findByIdWithPassword
+    // 1. Find user WITH passwordHash
     const user = await this.userRepo.findByIdWithPassword(userId);
 
-    if (!user || !user.passwordHash) {
+    if (!user) {
       throw new NotFoundError('User');
     }
 
-    // 2. Compare current password
+    // 2. Block OAuth-only users (no password set)
+    if (!user.passwordHash) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        MESSAGES.NO_PASSWORD_SET,
+      );
+    }
+
+    // 3. Compare current password
     const match = await passwordService.compare(currentPassword, user.passwordHash);
     if (!match) {
       throw new AuthError(
@@ -442,7 +472,15 @@ export class AuthService {
       );
     }
 
-    // 3. Validate new password against policy
+    // 4. Prevent same-password reuse
+    const sameAsOld = await passwordService.compare(newPassword, user.passwordHash);
+    if (sameAsOld) {
+      throw new ValidationError([
+        { field: 'newPassword', message: MESSAGES.SAME_PASSWORD },
+      ]);
+    }
+
+    // 5. Validate new password against policy
     const violations = passwordService.validatePolicy(
       newPassword,
       config.registration.validation.password,
@@ -453,16 +491,20 @@ export class AuthService {
       );
     }
 
-    // 4. Hash new password
+    // 6. Hash new password
     const hashedPassword = await passwordService.hash(newPassword);
 
-    // 5. Update passwordHash using dedicated method (no type cast needed)
+    // 7. Update passwordHash
     await this.userRepo.updatePasswordHash(userId, hashedPassword);
 
-    // 6. Revoke all sessions (security measure — forces re-login)
-    await this.sessionService.revokeAllByUserId(userId);
+    // 8. Revoke all OTHER sessions — keep the current session alive (better UX)
+    if (currentSessionId) {
+      await this.sessionService.revokeAllByUserIdExcept(userId, currentSessionId);
+    } else {
+      await this.sessionService.revokeAllByUserId(userId);
+    }
 
-    // 7. Record in login history
+    // 9. Record in login history
     await this.recordHistory(config, {
       userId,
       event: LOGIN_EVENTS.PASSWORD_CHANGE,
@@ -552,23 +594,36 @@ export class AuthService {
       );
     }
 
-    // 3. Mark token as used FIRST (single-use enforcement)
+    // 3. Prevent same-password reuse
+    const userWithPassword = await this.userRepo.findByIdWithPassword(
+      tokenDoc.userId.toString(),
+    );
+    if (userWithPassword?.passwordHash) {
+      const sameAsOld = await passwordService.compare(newPassword, userWithPassword.passwordHash);
+      if (sameAsOld) {
+        throw new ValidationError([
+          { field: 'newPassword', message: MESSAGES.SAME_PASSWORD },
+        ]);
+      }
+    }
+
+    // 4. Mark token as used FIRST (single-use enforcement)
     // Prevents replay attacks if the server crashes after password update
     await this.tokenService.markAsUsed(tokenDoc._id.toString());
 
-    // 4. Hash the new password
+    // 5. Hash the new password
     const hashedPassword = await passwordService.hash(newPassword);
 
-    // 5. Update the user's password
+    // 6. Update the user's password
     await this.userRepo.updatePasswordHash(
       tokenDoc.userId.toString(),
       hashedPassword,
     );
 
-    // 6. Revoke all sessions via SessionService (consistent side effects)
+    // 7. Revoke all sessions via SessionService (consistent side effects)
     await this.sessionService.revokeAllByUserId(tokenDoc.userId.toString());
 
-    // 7. Record in login history
+    // 8. Record in login history
     await this.recordHistory(config, {
       userId: tokenDoc.userId.toString(),
       event: LOGIN_EVENTS.PASSWORD_RESET,

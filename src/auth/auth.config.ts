@@ -112,6 +112,10 @@ export const defaultConfig: AuthConfig = {
         windowMs: DEFAULTS.RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS,
         maxAttempts: DEFAULTS.RATE_LIMIT_FORGOT_PASSWORD_MAX_ATTEMPTS,
       },
+      changePassword: {
+        windowMs: DEFAULTS.RATE_LIMIT_CHANGE_PASSWORD_WINDOW_MS,
+        maxAttempts: DEFAULTS.RATE_LIMIT_CHANGE_PASSWORD_MAX_ATTEMPTS,
+      },
     },
     accountLockout: {
       enabled: false,

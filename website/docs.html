@@ -276,6 +276,10 @@ app.<span class="fn">use</span>(<span class="str">'/auth'</span>, <span class="f
             <tr><td><code>accountLockout.enabled</code></td><td><code>false</code></td><td>Enable lockout</td></tr>
             <tr><td><code>accountLockout.maxFailedAttempts</code></td><td><code>5</code></td><td>Attempts before lock</td></tr>
             <tr><td><code>accountLockout.lockDurationMinutes</code></td><td><code>15</code></td><td>Lock duration</td></tr>
+            <tr><td><code>rateLimiting.login</code></td><td><code>15min / 10</code></td><td>Login rate limit</td></tr>
+            <tr><td><code>rateLimiting.register</code></td><td><code>1hr / 5</code></td><td>Register rate limit</td></tr>
+            <tr><td><code>rateLimiting.forgotPassword</code></td><td><code>15min / 3</code></td><td>Forgot password rate limit</td></tr>
+            <tr><td><code>rateLimiting.changePassword</code></td><td><code>15min / 5</code></td><td>Change password rate limit</td></tr>
           </tbody>
         </table>
 

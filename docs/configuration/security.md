@@ -53,3 +53,40 @@ createConfig({
 - Failed attempt counter resets on successful login
 - Lockout status is checked **before** password comparison (no timing leak)
 - The error message is generic to avoid confirming account existence
+
+---
+
+## Rate Limiting
+
+Per-endpoint rate limiting protects against brute-force attacks.
+
+### Defaults
+
+| Endpoint | Config Key | Window | Max Attempts |
+|---|---|---|---|
+| Login | `rateLimiting.login` | 15 minutes | 10 |
+| Register | `rateLimiting.register` | 1 hour | 5 |
+| Forgot Password | `rateLimiting.forgotPassword` | 15 minutes | 3 |
+| Change Password | `rateLimiting.changePassword` | 15 minutes | 5 |
+
+### Customize
+
+```typescript
+createConfig({
+  security: {
+    rateLimiting: {
+      login: { windowMs: 900_000, maxAttempts: 10 },
+      register: { windowMs: 3_600_000, maxAttempts: 5 },
+      forgotPassword: { windowMs: 900_000, maxAttempts: 3 },
+      changePassword: { windowMs: 900_000, maxAttempts: 5 },
+    },
+  },
+});
+```
+
+### How It Works
+
+- Uses `express-rate-limit` with per-IP tracking
+- Returns `429 RATE_LIMITED` with `Retry-After` header when limit is exceeded
+- Rate limit counters are **in-memory** — they reset on server restart
+- Standard headers are included (`RateLimit-*`) for client consumption

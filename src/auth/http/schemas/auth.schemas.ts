@@ -82,7 +82,7 @@ export function buildRegisterSchema(config: AuthConfig) {
     }
   }
 
-  return schema;
+  return schema.strict();
 }
 
 /**
@@ -107,7 +107,7 @@ export function buildLoginSchema(config: AuthConfig) {
     password: z
       .string()
       .min(1, 'Password is required'),
-  });
+  }).strict();
 }
 
 /**
@@ -140,7 +140,7 @@ export function buildUpdateProfileSchema(config: AuthConfig) {
     shape.lastName = z.string().min(1).max(50).optional();
   }
 
-  return z.object(shape);
+  return z.object(shape).strict();
 }
 
 /**

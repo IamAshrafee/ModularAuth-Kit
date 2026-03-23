@@ -24,6 +24,7 @@ Read these files for context:
 - `dev-docs/conventions/coding-standards.md` — naming and patterns to follow
 - `dev-docs/conventions/api-response-format.md` — response format to follow
 - `dev-docs/architecture/folder-structure.md` — where files go
+- `dev-docs/lessons-learned.md` — architectural mistakes to avoid repeating
 
 ## 2. Add Config Option
 

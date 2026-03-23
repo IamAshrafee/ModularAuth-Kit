@@ -126,10 +126,12 @@ createConfig({
 
 ### What happens when a user changes their password?
 
-1. Current password is verified
-2. New password is hashed with argon2id
-3. **All sessions are revoked** (forces re-login on all devices)
-4. The event is logged in login history (if enabled)
+1. OAuth-only users (no password) are blocked with a clear error
+2. Current password is verified
+3. New password must be **different** from the current one
+4. New password is hashed with argon2id
+5. **All other sessions are revoked** — the current session stays active (you stay logged in)
+6. The event is logged in login history (if enabled)
 
 ### What are the default password requirements?
 
@@ -210,6 +212,7 @@ Yes. Rate limits are applied per-endpoint:
 | Login | 15 minutes | 10 |
 | Register | 1 hour | 5 |
 | Forgot Password | 15 minutes | 3 |
+| Change Password | 15 minutes | 5 |
 
 ---
 
@@ -320,5 +323,6 @@ You've hit the rate limit. Wait for the rate limit window to expire:
 - Login: 15 minutes
 - Register: 1 hour
 - Forgot password: 15 minutes
+- Change password: 15 minutes
 
 For development, you can restart the server to reset in-memory rate limit counters.

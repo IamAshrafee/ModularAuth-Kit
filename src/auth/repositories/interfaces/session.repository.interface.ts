@@ -43,6 +43,9 @@ export interface ISessionRepository {
   /** Delete all sessions for a user */
   deleteByUserId(userId: string): Promise<void>;
 
+  /** Delete all sessions for a user except the specified session ID */
+  deleteByUserIdExcept(userId: string, exceptSessionId: string): Promise<void>;
+
   /** Count active sessions for a user */
   countByUserId(userId: string): Promise<number>;
 

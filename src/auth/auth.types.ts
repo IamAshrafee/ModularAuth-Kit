@@ -122,6 +122,7 @@ export interface AuthConfig {
       login: RateLimitConfig;
       register: RateLimitConfig;
       forgotPassword: RateLimitConfig;
+      changePassword: RateLimitConfig;
     };
     accountLockout: {
       enabled: boolean;

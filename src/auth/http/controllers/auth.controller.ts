@@ -144,10 +144,10 @@ export function createAuthController(deps: AuthControllerDeps) {
           user._id.toString(),
           currentPassword,
           newPassword,
+          req.sessionId,
           config,
           meta,
         );
-        clearSessionCookie(res, config);
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.PASSWORD_CHANGED, null);
       } catch (error) {
         handleError(res, error);
