@@ -956,11 +956,46 @@ section {
     top: 64px;
     left: 0;
     right: 0;
-    background: var(--bg-primary);
+    background: rgba(12, 12, 14, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    gap: 16px;
+    padding: 12px 0;
+    gap: 0;
     z-index: 99;
+  }
+
+  .nav-links.open li {
+    list-style: none;
+  }
+
+  .nav-links.open a {
+    display: block;
+    padding: 12px 24px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    transition: all var(--transition-fast);
+  }
+  .nav-links.open a:hover,
+  .nav-links.open a.active {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+  }
+  .nav-links.open li:last-child a {
+    border-bottom: none;
+  }
+
+  /* GitHub button in mobile nav — reset special styling */
+  .nav-links.open .nav-github {
+    border: none;
+    border-radius: 0;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    justify-content: flex-start;
+  }
+  .nav-links.open li:last-child .nav-github {
+    border-bottom: none;
   }
 
   /* Code blocks — prevent page overflow */
