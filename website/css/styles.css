@@ -390,7 +390,7 @@ section {
   background: var(--bg-code);
   border: 1px solid var(--border);
   border-radius: 10px;
-  overflow: clip;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.8;
@@ -428,6 +428,8 @@ section {
   padding: 20px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  width: 0;
+  min-width: 100%;
 }
 
 .code-body code {
