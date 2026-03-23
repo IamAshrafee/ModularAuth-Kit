@@ -390,7 +390,7 @@ section {
   background: var(--bg-code);
   border: 1px solid var(--border);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: clip;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.8;
