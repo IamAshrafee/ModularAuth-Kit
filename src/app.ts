@@ -12,6 +12,7 @@ import { createAuthModule } from './auth/index.js';
 import { setupSecurity } from './auth/http/middleware/security.js';
 import { AuthError } from './auth/errors/auth-error.js';
 import { sendError, sendSuccess } from './auth/utils/api-response.js';
+import { auditLog } from './auth/utils/audit-logger.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES } from './auth/auth.constants.js';
 
 // ============================================================================
@@ -26,6 +27,7 @@ export function createApp(config: AuthConfig) {
   // -----------------------------------------------------------------------
 
   app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
   // Security middleware (helmet, cookie-parser, CSRF)
   const securityMiddleware = setupSecurity(config);
@@ -61,7 +63,10 @@ export function createApp(config: AuthConfig) {
       return;
     }
 
-    console.error('[AUTH] Unexpected error:', error);
+    auditLog('unexpected_error', {
+      success: false,
+      detail: error.message,
+    });
     sendError(
       res,
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -72,3 +77,4 @@ export function createApp(config: AuthConfig) {
 
   return app;
 }
+

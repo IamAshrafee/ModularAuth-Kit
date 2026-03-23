@@ -12,6 +12,7 @@ import type { ISessionRepository } from '../../repositories/interfaces/session.r
 import { TokenService } from '../../services/token.service.js';
 import { EmailService } from '../../services/email.service.js';
 import * as passwordService from '../../services/password.service.js';
+import { ValidationError } from '../../errors/validation-error.js';
 import { sendSuccess, handleError } from '../../utils/api-response.js';
 import { auditLog } from '../../utils/audit-logger.js';
 import { HTTP_STATUS, MESSAGES } from '../../auth.constants.js';
@@ -89,23 +90,23 @@ export function createPasswordController(deps: PasswordControllerDeps) {
           config.registration.validation.password,
         );
         if (violations.length > 0) {
-          const { ValidationError } = await import('../../errors/validation-error.js');
           throw new ValidationError(
             violations.map((msg) => ({ field: 'newPassword', message: msg })),
           );
         }
 
+        // Mark token as used FIRST (single-use enforcement)
+        // This prevents replay attacks if the server crashes after password update
+        await tokenService.markAsUsed(tokenDoc._id.toString());
+
         // Hash the new password
         const hashedPassword = await passwordService.hash(newPassword);
 
-        // Update the user's password
-        await userRepository.updateById(
+        // Update the user's password using dedicated method (no type cast)
+        await userRepository.updatePasswordHash(
           tokenDoc.userId.toString(),
-          { passwordHash: hashedPassword } as never,
+          hashedPassword,
         );
-
-        // Mark token as used (single-use enforcement)
-        await tokenService.markAsUsed(tokenDoc._id.toString());
 
         // Revoke all sessions (force re-login with new password)
         await sessionRepository.deleteByUserId(tokenDoc.userId.toString());

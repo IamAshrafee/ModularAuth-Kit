@@ -21,6 +21,10 @@ export class MongoUserRepository implements IUserRepository {
     return UserModel.findOne({ email: email.toLowerCase().trim() });
   }
 
+  async findByIdWithPassword(id: string): Promise<UserDocument | null> {
+    return UserModel.findById(id);
+  }
+
   async findByUsername(username: string): Promise<UserDocument | null> {
     return UserModel.findOne({ username: username.toLowerCase().trim() }).select('-passwordHash');
   }
@@ -41,12 +45,43 @@ export class MongoUserRepository implements IUserRepository {
     ).select('-passwordHash');
   }
 
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await UserModel.updateOne({ _id: id }, { $set: { passwordHash } });
+  }
+
+  async linkGoogleAccount(
+    id: string,
+    googleId: string,
+    profileData?: { fullName?: string; firstName?: string; lastName?: string },
+  ): Promise<UserDocument | null> {
+    const updateData: Record<string, unknown> = {
+      googleId,
+      isEmailVerified: true, // Google already verified this email
+    };
+
+    // Only set profile fields if not already set on the user
+    if (profileData?.fullName) updateData.fullName = profileData.fullName;
+    if (profileData?.firstName) updateData.firstName = profileData.firstName;
+    if (profileData?.lastName) updateData.lastName = profileData.lastName;
+
+    return UserModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true },
+    ).select('-passwordHash');
+  }
+
   async setEmailVerified(id: string): Promise<void> {
     await UserModel.updateOne({ _id: id }, { $set: { isEmailVerified: true } });
   }
 
-  async incrementFailedAttempts(id: string): Promise<void> {
-    await UserModel.updateOne({ _id: id }, { $inc: { failedLoginAttempts: 1 } });
+  // Atomically increment and return — prevents race condition with concurrent login attempts
+  async incrementFailedAttemptsAndGet(id: string): Promise<UserDocument | null> {
+    return UserModel.findByIdAndUpdate(
+      id,
+      { $inc: { failedLoginAttempts: 1 } },
+      { new: true },
+    ).select('-passwordHash');
   }
 
   async resetFailedAttempts(id: string): Promise<void> {

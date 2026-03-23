@@ -11,6 +11,7 @@ import { AuthError } from '../../errors/auth-error.js';
 import { sendSuccess, handleError } from '../../utils/api-response.js';
 import { auditLog } from '../../utils/audit-logger.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES } from '../../auth.constants.js';
+import { getAuthenticatedUser } from '../request-helpers.js';
 
 // ============================================================================
 // Controller Factory
@@ -30,7 +31,7 @@ export function createSessionController(deps: SessionControllerDeps) {
     // -----------------------------------------------------------------------
     async listSessions(req: Request, res: Response): Promise<void> {
       try {
-        const userId = req.user!._id.toString();
+        const userId = getAuthenticatedUser(req)._id.toString();
         const currentSessionId = req.sessionId;
 
         const sessions = await sessionService.getActiveSessions(userId);
@@ -58,7 +59,7 @@ export function createSessionController(deps: SessionControllerDeps) {
     // -----------------------------------------------------------------------
     async revokeSession(req: Request, res: Response): Promise<void> {
       try {
-        const userId = req.user!._id.toString();
+        const userId = getAuthenticatedUser(req)._id.toString();
         const targetSessionId = req.params.id;
 
         // Verify the session belongs to this user

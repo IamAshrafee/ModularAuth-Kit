@@ -8,6 +8,7 @@ import type { Response } from 'express';
 
 import { AuthError } from '../errors/auth-error.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES } from '../auth.constants.js';
+import { auditLog } from './audit-logger.js';
 
 /**
  * Send a standardized success response.
@@ -65,8 +66,11 @@ export function handleError(res: Response, error: unknown): void {
     return;
   }
 
-  // Unexpected error — log the real error, return generic message
-  console.error('[AUTH] Unexpected error:', error);
+  // Unexpected error — structured log, generic response to client
+  auditLog('unexpected_error', {
+    success: false,
+    detail: error instanceof Error ? error.message : String(error),
+  });
   sendError(
     res,
     HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -74,3 +78,4 @@ export function handleError(res: Response, error: unknown): void {
     MESSAGES.INTERNAL_ERROR,
   );
 }
+

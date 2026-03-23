@@ -22,6 +22,7 @@ import { OAuthService } from '../../services/oauth.service.js';
 import { LoginHistoryService } from '../../services/login-history.service.js';
 import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
 import type { ISessionRepository } from '../../repositories/interfaces/session.repository.interface.js';
+import type { ILoginHistoryRepository } from '../../repositories/interfaces/login-history.repository.interface.js';
 import { createRequireAuth } from '../middleware/authenticate.js';
 import { validate } from '../middleware/validate.js';
 import { createRateLimiter } from '../middleware/rate-limiter.js';
@@ -54,6 +55,7 @@ export interface AuthRouterDeps {
   oauthService?: OAuthService;
   // Optional — provided when login history is enabled
   loginHistoryService?: LoginHistoryService;
+  loginHistoryRepository?: ILoginHistoryRepository;
 }
 
 /**
@@ -77,6 +79,7 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   const authController = createAuthController({
     authService,
     sessionService,
+    loginHistoryRepository: deps.loginHistoryRepository,
     config,
   });
 

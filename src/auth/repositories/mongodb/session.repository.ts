@@ -46,10 +46,14 @@ export class MongoSessionRepository implements ISessionRepository {
     return SessionModel.countDocuments({ userId });
   }
 
-  async deleteOldestByUserId(userId: string): Promise<void> {
-    const oldest = await SessionModel.findOne({ userId }).sort({ createdAt: 1 });
-    if (oldest) {
-      await SessionModel.deleteOne({ _id: oldest._id });
+  async deleteOldestByUserId(userId: string, count: number = 1): Promise<void> {
+    const oldest = await SessionModel.find({ userId })
+      .sort({ createdAt: 1 })
+      .limit(count)
+      .select('_id');
+
+    if (oldest.length > 0) {
+      await SessionModel.deleteMany({ _id: { $in: oldest.map((s) => s._id) } });
     }
   }
 }

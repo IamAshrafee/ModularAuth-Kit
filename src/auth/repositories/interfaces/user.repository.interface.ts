@@ -20,6 +20,9 @@ export interface IUserRepository {
   /** Find user by email including passwordHash (for login verification only) */
   findByEmailWithPassword(email: string): Promise<UserDocument | null>;
 
+  /** Find user by ID including passwordHash (for password change verification) */
+  findByIdWithPassword(id: string): Promise<UserDocument | null>;
+
   /** Find user by username (excludes passwordHash) */
   findByUsername(username: string): Promise<UserDocument | null>;
 
@@ -29,16 +32,26 @@ export interface IUserRepository {
   /** Find user by Google ID (excludes passwordHash) */
   findByGoogleId(googleId: string): Promise<UserDocument | null>;
 
-  /** Update user by ID, returns updated document */
+  /** Update user profile fields by ID, returns updated document */
   updateById(id: string, data: Partial<UpdateProfileDto>): Promise<UserDocument | null>;
+
+  /** Update user's passwordHash (internal operation, not a profile update) */
+  updatePasswordHash(id: string, passwordHash: string): Promise<void>;
+
+  /** Link a Google account to an existing user, returns updated document */
+  linkGoogleAccount(
+    id: string,
+    googleId: string,
+    profileData?: { fullName?: string; firstName?: string; lastName?: string },
+  ): Promise<UserDocument | null>;
 
   /** Mark user's email as verified */
   setEmailVerified(id: string): Promise<void>;
 
-  /** Increment failed login attempts counter */
-  incrementFailedAttempts(id: string): Promise<void>;
+  /** Atomically increment failed login attempts and return the updated document */
+  incrementFailedAttemptsAndGet(id: string): Promise<UserDocument | null>;
 
-  /** Reset failed login attempts to 0 */
+  /** Reset failed login attempts to 0 and clear lockUntil */
   resetFailedAttempts(id: string): Promise<void>;
 
   /** Lock account until the specified date */

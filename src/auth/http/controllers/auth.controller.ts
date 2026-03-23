@@ -7,57 +7,20 @@
 
 import type { Request, Response } from 'express';
 
-import type { AuthConfig, RequestMeta } from '../../auth.types.js';
+import type { AuthConfig } from '../../auth.types.js';
+import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../../repositories/interfaces/login-history.repository.interface.js';
 import { AuthService } from '../../services/auth.service.js';
 import { SessionService } from '../../services/session.service.js';
 import { sendSuccess } from '../../utils/api-response.js';
 import { handleError } from '../../utils/api-response.js';
-import { parseDevice } from '../../utils/device-parser.js';
 import { auditLog } from '../../utils/audit-logger.js';
-import { HTTP_STATUS, MESSAGES } from '../../auth.constants.js';
-
-// ============================================================================
-// Cookie Helpers
-// ============================================================================
-
-/**
- * Set the session cookie on the response.
- */
-function setSessionCookie(
-  res: Response,
-  sessionId: string,
-  config: AuthConfig,
-): void {
-  res.cookie(config.session.cookieName, sessionId, {
-    httpOnly: true,
-    secure: config.session.secure,
-    sameSite: config.session.sameSite,
-    maxAge: config.session.maxAge,
-    path: '/',
-  });
-}
-
-/**
- * Clear the session cookie from the response.
- */
-function clearSessionCookie(res: Response, config: AuthConfig): void {
-  res.clearCookie(config.session.cookieName, {
-    httpOnly: true,
-    secure: config.session.secure,
-    sameSite: config.session.sameSite,
-    path: '/',
-  });
-}
-
-/**
- * Extract request metadata (IP, User-Agent, device) from the Express request.
- */
-function getRequestMeta(req: Request): RequestMeta {
-  const ip = req.ip ?? req.socket.remoteAddress ?? 'unknown';
-  const userAgent = req.headers['user-agent'] ?? 'unknown';
-  const device = parseDevice(userAgent);
-  return { ip, userAgent, device };
-}
+import { HTTP_STATUS, MESSAGES, LOGIN_EVENTS } from '../../auth.constants.js';
+import {
+  getRequestMeta,
+  setSessionCookie,
+  clearSessionCookie,
+  getAuthenticatedUser,
+} from '../request-helpers.js';
 
 // ============================================================================
 // Controller Factory
@@ -66,11 +29,12 @@ function getRequestMeta(req: Request): RequestMeta {
 export interface AuthControllerDeps {
   authService: AuthService;
   sessionService: SessionService;
+  loginHistoryRepository?: ILoginHistoryRepository;
   config: AuthConfig;
 }
 
 export function createAuthController(deps: AuthControllerDeps) {
-  const { authService, sessionService, config } = deps;
+  const { authService, sessionService, loginHistoryRepository, config } = deps;
 
   return {
     // -----------------------------------------------------------------------
@@ -113,11 +77,28 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async logout(req: Request, res: Response): Promise<void> {
       try {
-        const userId = req.user?._id.toString();
+        const user = getAuthenticatedUser(req);
+        const userId = user._id.toString();
+
         if (req.sessionId) {
           await sessionService.revokeById(req.sessionId);
         }
         clearSessionCookie(res, config);
+
+        // Record logout in login history (if enabled)
+        if (config.loginHistory.enabled && loginHistoryRepository) {
+          const meta = getRequestMeta(req);
+          const historyData: CreateLoginHistoryData = {
+            userId,
+            event: LOGIN_EVENTS.LOGOUT,
+            ipAddress: meta.ip,
+            userAgent: meta.userAgent,
+            device: meta.device,
+            success: true,
+          };
+          await loginHistoryRepository.create(historyData);
+        }
+
         auditLog('logout', { userId, ip: req.ip, success: true });
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.LOGOUT_SUCCESS, null);
       } catch (error) {
@@ -130,11 +111,27 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async logoutAll(req: Request, res: Response): Promise<void> {
       try {
-        const userId = req.user?._id.toString();
-        if (req.user) {
-          await sessionService.revokeAllByUserId(req.user._id.toString());
-        }
+        const user = getAuthenticatedUser(req);
+        const userId = user._id.toString();
+
+        await sessionService.revokeAllByUserId(userId);
         clearSessionCookie(res, config);
+
+        // Record logout-all in login history (if enabled)
+        if (config.loginHistory.enabled && loginHistoryRepository) {
+          const meta = getRequestMeta(req);
+          const historyData: CreateLoginHistoryData = {
+            userId,
+            event: LOGIN_EVENTS.LOGOUT,
+            ipAddress: meta.ip,
+            userAgent: meta.userAgent,
+            device: meta.device,
+            success: true,
+            detail: 'logout_all_devices',
+          };
+          await loginHistoryRepository.create(historyData);
+        }
+
         auditLog('logout_all', { userId, ip: req.ip, success: true });
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.LOGOUT_SUCCESS, null);
       } catch (error) {
@@ -147,8 +144,9 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async getProfile(req: Request, res: Response): Promise<void> {
       try {
-        const user = await authService.getProfile(req.user!._id.toString());
-        sendSuccess(res, HTTP_STATUS.OK, MESSAGES.PROFILE_FETCHED, { user });
+        const user = getAuthenticatedUser(req);
+        const profile = await authService.getProfile(user._id.toString());
+        sendSuccess(res, HTTP_STATUS.OK, MESSAGES.PROFILE_FETCHED, { user: profile });
       } catch (error) {
         handleError(res, error);
       }
@@ -159,12 +157,13 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async updateProfile(req: Request, res: Response): Promise<void> {
       try {
-        const user = await authService.updateProfile(
-          req.user!._id.toString(),
+        const user = getAuthenticatedUser(req);
+        const updated = await authService.updateProfile(
+          user._id.toString(),
           req.body,
           config,
         );
-        sendSuccess(res, HTTP_STATUS.OK, MESSAGES.PROFILE_UPDATED, { user });
+        sendSuccess(res, HTTP_STATUS.OK, MESSAGES.PROFILE_UPDATED, { user: updated });
       } catch (error) {
         handleError(res, error);
       }
@@ -175,14 +174,12 @@ export function createAuthController(deps: AuthControllerDeps) {
     // -----------------------------------------------------------------------
     async changePassword(req: Request, res: Response): Promise<void> {
       try {
+        const user = getAuthenticatedUser(req);
         const { currentPassword, newPassword } = req.body;
-        const meta: RequestMeta = {
-          ip: req.ip ?? 'unknown',
-          userAgent: req.get('user-agent') ?? 'unknown',
-          device: parseDevice(req.get('user-agent') ?? ''),
-        };
+        const meta = getRequestMeta(req);
+
         await authService.changePassword(
-          req.user!._id.toString(),
+          user._id.toString(),
           currentPassword,
           newPassword,
           config,

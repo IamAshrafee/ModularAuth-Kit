@@ -90,7 +90,7 @@ export function createAuthModule(config: AuthConfig): Router {
 
   const authService = new AuthService({
     userRepository,
-    sessionRepository,
+    sessionService,
     loginHistoryRepository,
     tokenService,
     emailService,
@@ -98,7 +98,8 @@ export function createAuthModule(config: AuthConfig): Router {
 
   const oauthService = new OAuthService({
     userRepository,
-    sessionRepository,
+    sessionService,
+    loginHistoryRepository,
   });
 
   const loginHistoryService = new LoginHistoryService({
@@ -119,5 +120,6 @@ export function createAuthModule(config: AuthConfig): Router {
     sessionRepository,
     oauthService,
     loginHistoryService,
+    loginHistoryRepository,
   });
 }

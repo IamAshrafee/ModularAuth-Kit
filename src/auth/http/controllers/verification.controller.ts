@@ -14,6 +14,7 @@ import { AuthError } from '../../errors/auth-error.js';
 import { sendSuccess, handleError } from '../../utils/api-response.js';
 import { auditLog } from '../../utils/audit-logger.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES } from '../../auth.constants.js';
+import { getAuthenticatedUser } from '../request-helpers.js';
 
 // ============================================================================
 // Controller Factory
@@ -36,7 +37,7 @@ export function createVerificationController(deps: VerificationControllerDeps) {
     async verifyEmail(req: Request, res: Response): Promise<void> {
       try {
         const { code } = req.body;
-        const userId = req.user!._id.toString();
+        const userId = getAuthenticatedUser(req)._id.toString();
 
         // Check if already verified
         const user = await userRepository.findById(userId);
@@ -63,8 +64,8 @@ export function createVerificationController(deps: VerificationControllerDeps) {
         // Mark token as used
         await tokenService.markAsUsed(tokenDoc._id.toString());
 
-        // Set isEmailVerified = true
-        await userRepository.updateById(userId, { isEmailVerified: true } as never);
+        // Set isEmailVerified = true — using dedicated method (no type cast)
+        await userRepository.setEmailVerified(userId);
 
         auditLog('email_verified', { userId, success: true });
 
@@ -79,7 +80,7 @@ export function createVerificationController(deps: VerificationControllerDeps) {
     // -----------------------------------------------------------------------
     async resendVerification(req: Request, res: Response): Promise<void> {
       try {
-        const userId = req.user!._id.toString();
+        const userId = getAuthenticatedUser(req)._id.toString();
 
         // Check if already verified
         const user = await userRepository.findById(userId);

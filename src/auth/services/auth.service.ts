@@ -15,8 +15,8 @@ import type {
   UserDocument,
 } from '../auth.types.js';
 import type { IUserRepository } from '../repositories/interfaces/user.repository.interface.js';
-import type { ISessionRepository } from '../repositories/interfaces/session.repository.interface.js';
 import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
+import type { SessionService } from './session.service.js';
 import type { TokenService } from './token.service.js';
 import type { EmailService } from './email.service.js';
 import { AuthError } from '../errors/auth-error.js';
@@ -24,8 +24,6 @@ import { ValidationError } from '../errors/validation-error.js';
 import { NotFoundError } from '../errors/not-found-error.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES, LOGIN_EVENTS } from '../auth.constants.js';
 import * as passwordService from './password.service.js';
-import { generateToken } from '../utils/crypto.js';
-import { parseDevice } from '../utils/device-parser.js';
 import { auditLog } from '../utils/audit-logger.js';
 
 // ============================================================================
@@ -34,7 +32,7 @@ import { auditLog } from '../utils/audit-logger.js';
 
 interface AuthServiceDeps {
   userRepository: IUserRepository;
-  sessionRepository: ISessionRepository;
+  sessionService: SessionService;
   loginHistoryRepository?: ILoginHistoryRepository;
   tokenService?: TokenService;
   emailService?: EmailService;
@@ -46,14 +44,14 @@ interface AuthServiceDeps {
 
 export class AuthService {
   private readonly userRepo: IUserRepository;
-  private readonly sessionRepo: ISessionRepository;
+  private readonly sessionService: SessionService;
   private readonly loginHistoryRepo?: ILoginHistoryRepository;
   private readonly tokenService?: TokenService;
   private readonly emailService?: EmailService;
 
   constructor(deps: AuthServiceDeps) {
     this.userRepo = deps.userRepository;
-    this.sessionRepo = deps.sessionRepository;
+    this.sessionService = deps.sessionService;
     this.loginHistoryRepo = deps.loginHistoryRepository;
     this.tokenService = deps.tokenService;
     this.emailService = deps.emailService;
@@ -124,8 +122,8 @@ export class AuthService {
       lastName: data.lastName?.trim(),
     });
 
-    // 7. Create session
-    const sessionId = await this.createSession(
+    // 7. Create session (delegated to SessionService — single source of truth)
+    const sessionId = await this.sessionService.create(
       user._id.toString(),
       meta,
       config,
@@ -227,12 +225,10 @@ export class AuthService {
     );
 
     if (!passwordMatch) {
-      // 4. Handle failed attempt
+      // 4. Handle failed attempt — atomic increment-and-check to prevent race conditions
       if (config.security.accountLockout.enabled) {
-        await this.userRepo.incrementFailedAttempts(user._id.toString());
+        const updatedUser = await this.userRepo.incrementFailedAttemptsAndGet(user._id.toString());
 
-        // Check if should lock
-        const updatedUser = await this.userRepo.findById(user._id.toString());
         if (
           updatedUser &&
           updatedUser.failedLoginAttempts >= config.security.accountLockout.maxFailedAttempts
@@ -270,14 +266,14 @@ export class AuthService {
 
     // 7. Enforce max sessions (if enabled)
     if (config.sessionManagement.enabled) {
-      await this.enforceMaxSessions(
+      await this.sessionService.enforceMaxSessions(
         user._id.toString(),
         config.sessionManagement.maxActiveSessions,
       );
     }
 
-    // 8. Create session
-    const sessionId = await this.createSession(
+    // 8. Create session (delegated to SessionService)
+    const sessionId = await this.sessionService.create(
       user._id.toString(),
       meta,
       config,
@@ -375,11 +371,8 @@ export class AuthService {
     config: AuthConfig,
     meta: RequestMeta,
   ): Promise<void> {
-    // 1. Find user WITH passwordHash
-    const user = await this.userRepo.findByEmailWithPassword(
-      // We need findById with password — use a workaround via the user's email
-      (await this.userRepo.findById(userId))?.email ?? '',
-    );
+    // 1. Find user WITH passwordHash — single query using findByIdWithPassword
+    const user = await this.userRepo.findByIdWithPassword(userId);
 
     if (!user || !user.passwordHash) {
       throw new NotFoundError('User');
@@ -409,11 +402,11 @@ export class AuthService {
     // 4. Hash new password
     const hashedPassword = await passwordService.hash(newPassword);
 
-    // 5. Update passwordHash
-    await this.userRepo.updateById(userId, { passwordHash: hashedPassword } as never);
+    // 5. Update passwordHash using dedicated method (no type cast needed)
+    await this.userRepo.updatePasswordHash(userId, hashedPassword);
 
     // 6. Revoke all sessions (security measure — forces re-login)
-    await this.sessionRepo.deleteByUserId(userId);
+    await this.sessionService.revokeAllByUserId(userId);
 
     // 7. Record in login history
     if (config.loginHistory.enabled && this.loginHistoryRepo) {
@@ -456,42 +449,6 @@ export class AuthService {
     }
 
     return null;
-  }
-
-  /**
-   * Create a session for the given user.
-   */
-  private async createSession(
-    userId: string,
-    meta: RequestMeta,
-    config: AuthConfig,
-  ): Promise<string> {
-    const sessionId = generateToken(32);
-    const expiresAt = new Date(Date.now() + config.session.maxAge);
-
-    await this.sessionRepo.create({
-      sessionId,
-      userId,
-      ipAddress: meta.ip,
-      userAgent: meta.userAgent,
-      device: meta.device,
-      expiresAt,
-    });
-
-    return sessionId;
-  }
-
-  /**
-   * Enforce max active sessions for a user by deleting the oldest.
-   */
-  private async enforceMaxSessions(
-    userId: string,
-    maxSessions: number,
-  ): Promise<void> {
-    const count = await this.sessionRepo.countByUserId(userId);
-    if (count >= maxSessions) {
-      await this.sessionRepo.deleteOldestByUserId(userId);
-    }
   }
 
   /**

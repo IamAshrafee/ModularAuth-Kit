@@ -7,12 +7,13 @@
 
 import { createHash, randomBytes } from 'crypto';
 
-import type { AuthConfig, UserDocument, RequestMeta } from '../auth.types.js';
+import type { AuthConfig, UserDocument, RequestMeta, LoginEvent } from '../auth.types.js';
 import type { IUserRepository } from '../repositories/interfaces/user.repository.interface.js';
-import type { ISessionRepository } from '../repositories/interfaces/session.repository.interface.js';
+import type { SessionService } from './session.service.js';
+import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
 import { AuthError } from '../errors/auth-error.js';
-import { HTTP_STATUS, ERROR_CODES } from '../auth.constants.js';
-import { generateToken } from '../utils/crypto.js';
+import { HTTP_STATUS, ERROR_CODES, LOGIN_EVENTS } from '../auth.constants.js';
+import { timingSafeCompare } from '../utils/crypto.js';
 import { auditLog } from '../utils/audit-logger.js';
 
 // ============================================================================
@@ -66,16 +67,19 @@ const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
 
 interface OAuthServiceDeps {
   userRepository: IUserRepository;
-  sessionRepository: ISessionRepository;
+  sessionService: SessionService;
+  loginHistoryRepository?: ILoginHistoryRepository;
 }
 
 export class OAuthService {
   private readonly userRepo: IUserRepository;
-  private readonly sessionRepo: ISessionRepository;
+  private readonly sessionService: SessionService;
+  private readonly loginHistoryRepo?: ILoginHistoryRepository;
 
   constructor(deps: OAuthServiceDeps) {
     this.userRepo = deps.userRepository;
-    this.sessionRepo = deps.sessionRepository;
+    this.sessionService = deps.sessionService;
+    this.loginHistoryRepo = deps.loginHistoryRepository;
   }
 
   // --------------------------------------------------------------------------
@@ -136,8 +140,8 @@ export class OAuthService {
     meta: RequestMeta,
     config: AuthConfig,
   ): Promise<OAuthResult> {
-    // 1. Verify state matches (CSRF protection)
-    if (receivedState !== storedStateData.state) {
+    // 1. Verify state matches (CSRF protection) — timing-safe to prevent oracle attacks
+    if (!timingSafeCompare(receivedState, storedStateData.state)) {
       throw new AuthError(
         HTTP_STATUS.BAD_REQUEST,
         ERROR_CODES.VALIDATION_ERROR,
@@ -158,12 +162,33 @@ export class OAuthService {
     // 4. Account resolution
     const { user, isNewUser } = await this.resolveAccount(profile);
 
-    // 5. Create session
-    const sessionId = await this.createSession(
+    // 5. Enforce max sessions (if enabled)
+    if (config.sessionManagement.enabled) {
+      await this.sessionService.enforceMaxSessions(
+        user._id.toString(),
+        config.sessionManagement.maxActiveSessions,
+      );
+    }
+
+    // 6. Create session (delegated to SessionService — single source of truth)
+    const sessionId = await this.sessionService.create(
       user._id.toString(),
       meta,
       config,
     );
+
+    // 7. Record login history (if enabled)
+    if (config.loginHistory.enabled && this.loginHistoryRepo) {
+      await this.recordHistory({
+        userId: user._id.toString(),
+        event: LOGIN_EVENTS.LOGIN_SUCCESS,
+        ipAddress: meta.ip,
+        userAgent: meta.userAgent,
+        device: meta.device,
+        success: true,
+        detail: isNewUser ? 'oauth_new_google_user' : 'oauth_returning_google_user',
+      });
+    }
 
     auditLog('oauth_login', {
       userId: user._id.toString(),
@@ -203,8 +228,11 @@ export class OAuthService {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('[AUTH] Google token exchange failed:', error);
+      const errorText = await response.text();
+      auditLog('oauth_token_exchange_failed', {
+        success: false,
+        detail: errorText,
+      });
       throw new AuthError(
         HTTP_STATUS.BAD_REQUEST,
         ERROR_CODES.VALIDATION_ERROR,
@@ -281,16 +309,15 @@ export class OAuthService {
     // 2. Try to find by email (existing email-registered user)
     const existingByEmail = await this.userRepo.findByEmail(profile.email);
     if (existingByEmail) {
-      // Link Google account to existing user
-      const updatedUser = await this.userRepo.updateById(
+      // Link Google account to existing user using dedicated method (no type cast)
+      const updatedUser = await this.userRepo.linkGoogleAccount(
         existingByEmail._id.toString(),
+        profile.sub,
         {
-          googleId: profile.sub,
-          isEmailVerified: true, // Google already verified this email
           fullName: existingByEmail.fullName ?? profile.name,
           firstName: existingByEmail.firstName ?? profile.given_name,
           lastName: existingByEmail.lastName ?? profile.family_name,
-        } as never,
+        },
       );
 
       auditLog('account_linked', {
@@ -316,29 +343,15 @@ export class OAuthService {
   }
 
   // --------------------------------------------------------------------------
-  // Private: createSession
+  // Private: recordHistory
   // --------------------------------------------------------------------------
 
   /**
-   * Create a session for the OAuth user.
+   * Record a login history entry.
    */
-  private async createSession(
-    userId: string,
-    meta: RequestMeta,
-    config: AuthConfig,
-  ): Promise<string> {
-    const sessionId = generateToken(32);
-    const expiresAt = new Date(Date.now() + config.session.maxAge);
-
-    await this.sessionRepo.create({
-      sessionId,
-      userId,
-      ipAddress: meta.ip,
-      userAgent: meta.userAgent,
-      device: meta.device,
-      expiresAt,
-    });
-
-    return sessionId;
+  private async recordHistory(data: CreateLoginHistoryData): Promise<void> {
+    if (this.loginHistoryRepo) {
+      await this.loginHistoryRepo.create(data);
+    }
   }
 }

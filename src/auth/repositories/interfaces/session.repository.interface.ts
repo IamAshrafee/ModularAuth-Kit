@@ -46,6 +46,6 @@ export interface ISessionRepository {
   /** Count active sessions for a user */
   countByUserId(userId: string): Promise<number>;
 
-  /** Delete the oldest session for a user (for max session enforcement) */
-  deleteOldestByUserId(userId: string): Promise<void>;
+  /** Delete the N oldest sessions for a user (for max session enforcement) */
+  deleteOldestByUserId(userId: string, count?: number): Promise<void>;
 }

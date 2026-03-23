@@ -8,6 +8,7 @@ import type { Request, Response } from 'express';
 import { LoginHistoryService } from '../../services/login-history.service.js';
 import { sendSuccess, handleError } from '../../utils/api-response.js';
 import { HTTP_STATUS, MESSAGES } from '../../auth.constants.js';
+import { getAuthenticatedUser } from '../request-helpers.js';
 
 // ============================================================================
 // Controller Factory
@@ -26,7 +27,7 @@ export function createHistoryController(deps: HistoryControllerDeps) {
     // -----------------------------------------------------------------------
     async getHistory(req: Request, res: Response): Promise<void> {
       try {
-        const userId = req.user!._id.toString();
+        const userId = getAuthenticatedUser(req)._id.toString();
 
         // Parse pagination from query params
         const page = parseInt(req.query.page as string, 10) || 1;

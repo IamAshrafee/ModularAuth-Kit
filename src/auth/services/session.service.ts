@@ -219,7 +219,9 @@ export class SessionService {
   ): Promise<void> {
     const count = await this.sessionRepo.countByUserId(userId);
     if (count >= maxSessions) {
-      await this.sessionRepo.deleteOldestByUserId(userId);
+      // Delete enough oldest sessions to make room for a new one
+      const excess = count - maxSessions + 1;
+      await this.sessionRepo.deleteOldestByUserId(userId, excess);
     }
   }
 }
