@@ -394,6 +394,8 @@ section {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.8;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .code-header {
@@ -876,19 +878,29 @@ section {
 
 /* Tablet landscape */
 @media (max-width: 1024px) {
-  .ai-section { padding: 48px 32px; gap: 32px; }
+  .ai-section {
+    padding: 48px 32px;
+    gap: 32px;
+  }
   .feature-detail { gap: 32px; }
+  .nav-links { gap: 20px; }
 }
 
 /* Tablet portrait */
 @media (max-width: 900px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .comparison { grid-template-columns: 1fr; }
-  .ai-section { grid-template-columns: 1fr; padding: 40px 24px; }
+  .ai-section {
+    grid-template-columns: 1fr;
+    padding: 40px 24px;
+  }
   .steps { grid-template-columns: 1fr; }
   .step:not(:last-child)::after { display: none; }
   .stats { grid-template-columns: repeat(2, 1fr); }
-  .feature-detail { grid-template-columns: 1fr; }
+  .feature-detail {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
   .feature-detail:nth-child(even) { direction: ltr; }
   .docs-layout { grid-template-columns: 1fr; }
   .docs-sidebar {
@@ -904,14 +916,18 @@ section {
   .docs-sidebar-group { margin-bottom: 0; }
 }
 
-/* Tablet — table scroll wrapper */
+/* Tablet small */
 @media (max-width: 768px) {
+  /* Tables scroll horizontally */
+  table,
   .docs-content table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
   }
+
+  /* Getting-started tabs */
   .gs-tabs {
     width: 100%;
     overflow-x: auto;
@@ -921,19 +937,12 @@ section {
     white-space: nowrap;
     flex-shrink: 0;
   }
+
   .hero h1 { letter-spacing: -1px; }
-}
 
-/* Mobile */
-@media (max-width: 640px) {
-  .feature-grid { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: 1fr; }
-  .hero { padding: 120px 0 60px; }
-  :root { --section-padding: 80px 0; }
-
+  /* Nav links hide earlier on tight tablets */
   .nav-links { display: none; }
   .nav-toggle { display: flex; }
-
   .nav-links.open {
     display: flex;
     flex-direction: column;
@@ -945,40 +954,112 @@ section {
     border-bottom: 1px solid var(--border);
     padding: 16px 24px;
     gap: 16px;
+    z-index: 99;
   }
 
+  /* Code blocks — prevent page overflow */
+  .code-body {
+    padding: 16px;
+    font-size: 12px;
+  }
+  .code-body code {
+    font-size: 12px;
+  }
+
+  /* Feature detail cards */
+  .feature-detail {
+    padding: 40px 0;
+  }
+  .feature-detail h3 { font-size: 20px; }
+
+  /* Footer */
   .footer-inner {
     flex-direction: column;
     gap: 16px;
   }
+}
 
-  .ai-section { padding: 32px 20px; }
-  .ai-section h2 { font-size: 24px; }
+/* Mobile */
+@media (max-width: 640px) {
+  :root { --section-padding: 72px 0; }
 
-  .feature-detail {
-    padding: 40px 0;
-    gap: 24px;
+  .container { padding: 0 20px; }
+  .nav { padding: 0 20px; }
+
+  .hero { padding: 110px 0 48px; }
+  .hero h1 { font-size: 32px; letter-spacing: -0.5px; }
+  .hero-subtitle { font-size: 15px; margin-bottom: 28px; }
+
+  .feature-grid { grid-template-columns: 1fr; }
+  .feature-card { padding: 24px; }
+
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat { padding: 20px 16px; }
+  .stat-value { font-size: 26px; }
+
+  .ai-section {
+    padding: 28px 20px;
+    border-radius: 12px;
   }
-  .feature-detail h3 { font-size: 20px; }
+  .ai-section h2 { font-size: 22px; }
 
-  .stat { padding: 24px 16px; }
-  .stat-value { font-size: 28px; }
+  .section-header { margin-bottom: 40px; }
+  .section-title { font-size: 24px; }
 
-  .code-body { padding: 16px; font-size: 12px; }
+  .comparison-label { font-size: 11px; }
 
-  .docs-content h1 { font-size: 26px; }
-  .docs-content h2 { font-size: 19px; margin-top: 36px; }
+  /* Compat badges wrap tighter */
+  .compat-badges { gap: 8px; }
+  .compat-badge { padding: 6px 12px; font-size: 12px; }
+
+  /* Docs page */
+  .docs-content h1 { font-size: 24px; }
+  .docs-content h2 { font-size: 18px; margin-top: 32px; padding-top: 16px; }
+  .docs-content th,
+  .docs-content td { padding: 8px 12px; font-size: 13px; }
 
   .docs-sidebar {
-    gap: 12px 24px;
+    gap: 8px 20px;
+    font-size: 13px;
   }
+
+  /* Buttons */
+  .hero-actions { gap: 8px; }
+  .btn { padding: 10px 20px; font-size: 13px; }
+
+  /* Getting-started inline-styled sections */
+  .gs-panel h2 { font-size: 20px !important; }
+  .gs-panel h3 { font-size: 15px !important; }
 }
 
 /* Very small phones */
 @media (max-width: 380px) {
   .container { padding: 0 16px; }
   .nav { padding: 0 16px; }
-  .hero h1 { font-size: 32px; }
-  .hero-subtitle { font-size: 15px; }
-  .btn { padding: 10px 20px; font-size: 13px; }
+
+  .hero h1 { font-size: 28px; }
+  .hero-subtitle { font-size: 14px; }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn { justify-content: center; }
+
+  .stats { grid-template-columns: 1fr; }
+  .stat-value { font-size: 24px; }
+
+  .nav-logo { font-size: 15px; }
+  .nav-logo .logo-icon { width: 24px; height: 24px; font-size: 12px; }
+
+  .code-body { padding: 12px; font-size: 11px; }
+  .code-body code { font-size: 11px; }
+  .code-header { padding: 8px 12px; }
+  .code-filename { font-size: 11px; }
+
+  .feature-card { padding: 20px; }
+  .feature-card h3 { font-size: 14px; }
+  .feature-card p { font-size: 13px; }
+
+  .compat-badge { padding: 5px 10px; font-size: 11px; }
 }
