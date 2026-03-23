@@ -10,7 +10,8 @@ import { createHash, randomBytes } from 'crypto';
 import type { AuthConfig, UserDocument, RequestMeta, LoginEvent } from '../auth.types.js';
 import type { IUserRepository } from '../repositories/interfaces/user.repository.interface.js';
 import type { SessionService } from './session.service.js';
-import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
+import type { LoginHistoryService } from './login-history.service.js';
+import type { CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
 import { AuthError } from '../errors/auth-error.js';
 import { HTTP_STATUS, ERROR_CODES, LOGIN_EVENTS } from '../auth.constants.js';
 import { timingSafeCompare } from '../utils/crypto.js';
@@ -68,18 +69,18 @@ const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
 interface OAuthServiceDeps {
   userRepository: IUserRepository;
   sessionService: SessionService;
-  loginHistoryRepository?: ILoginHistoryRepository;
+  loginHistoryService?: LoginHistoryService;
 }
 
 export class OAuthService {
   private readonly userRepo: IUserRepository;
   private readonly sessionService: SessionService;
-  private readonly loginHistoryRepo?: ILoginHistoryRepository;
+  private readonly loginHistoryService?: LoginHistoryService;
 
   constructor(deps: OAuthServiceDeps) {
     this.userRepo = deps.userRepository;
     this.sessionService = deps.sessionService;
-    this.loginHistoryRepo = deps.loginHistoryRepository;
+    this.loginHistoryService = deps.loginHistoryService;
   }
 
   // --------------------------------------------------------------------------
@@ -178,7 +179,7 @@ export class OAuthService {
     );
 
     // 7. Record login history (if enabled)
-    if (config.loginHistory.enabled && this.loginHistoryRepo) {
+    if (config.loginHistory.enabled && this.loginHistoryService) {
       await this.recordHistory({
         userId: user._id.toString(),
         event: LOGIN_EVENTS.LOGIN_SUCCESS,
@@ -350,8 +351,8 @@ export class OAuthService {
    * Record a login history entry.
    */
   private async recordHistory(data: CreateLoginHistoryData): Promise<void> {
-    if (this.loginHistoryRepo) {
-      await this.loginHistoryRepo.create(data);
+    if (this.loginHistoryService) {
+      await this.loginHistoryService.record(data);
     }
   }
 }

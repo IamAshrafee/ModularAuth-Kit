@@ -81,6 +81,10 @@ export function createAuthModule(config: AuthConfig): Router {
 
   const tokenService = new TokenService({ tokenRepository });
 
+  const loginHistoryService = new LoginHistoryService({
+    loginHistoryRepository,
+  });
+
   // Email adapter — console for dev, nodemailer for prod
   const emailAdapter = config.email.adapter === 'nodemailer'
     ? new NodemailerEmailAdapter(config)
@@ -91,7 +95,7 @@ export function createAuthModule(config: AuthConfig): Router {
   const authService = new AuthService({
     userRepository,
     sessionService,
-    loginHistoryRepository,
+    loginHistoryService,
     tokenService,
     emailService,
   });
@@ -99,27 +103,19 @@ export function createAuthModule(config: AuthConfig): Router {
   const oauthService = new OAuthService({
     userRepository,
     sessionService,
-    loginHistoryRepository,
-  });
-
-  const loginHistoryService = new LoginHistoryService({
-    loginHistoryRepository,
+    loginHistoryService,
   });
 
   // -----------------------------------------------------------------------
   // 3. Build and Return Router
+  //    Only services are passed — no raw repositories leak to the HTTP layer
   // -----------------------------------------------------------------------
 
   return createAuthRouter({
     authService,
     sessionService,
     config,
-    tokenService,
-    emailService,
-    userRepository,
-    sessionRepository,
     oauthService,
     loginHistoryService,
-    loginHistoryRepository,
   });
 }

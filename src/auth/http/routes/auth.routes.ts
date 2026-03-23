@@ -10,19 +10,14 @@ import { Router } from 'express';
 import type { AuthConfig } from '../../auth.types.js';
 import { AuthService } from '../../services/auth.service.js';
 import { SessionService } from '../../services/session.service.js';
-import { TokenService } from '../../services/token.service.js';
-import { EmailService } from '../../services/email.service.js';
+import { OAuthService } from '../../services/oauth.service.js';
+import { LoginHistoryService } from '../../services/login-history.service.js';
 import { createAuthController } from '../controllers/auth.controller.js';
 import { createPasswordController } from '../controllers/password.controller.js';
 import { createVerificationController } from '../controllers/verification.controller.js';
 import { createOAuthController } from '../controllers/oauth.controller.js';
 import { createHistoryController } from '../controllers/history.controller.js';
 import { createSessionController } from '../controllers/session.controller.js';
-import { OAuthService } from '../../services/oauth.service.js';
-import { LoginHistoryService } from '../../services/login-history.service.js';
-import type { IUserRepository } from '../../repositories/interfaces/user.repository.interface.js';
-import type { ISessionRepository } from '../../repositories/interfaces/session.repository.interface.js';
-import type { ILoginHistoryRepository } from '../../repositories/interfaces/login-history.repository.interface.js';
 import { createRequireAuth } from '../middleware/authenticate.js';
 import { validate } from '../middleware/validate.js';
 import { createRateLimiter } from '../middleware/rate-limiter.js';
@@ -46,16 +41,10 @@ export interface AuthRouterDeps {
   authService: AuthService;
   sessionService: SessionService;
   config: AuthConfig;
-  // Optional — provided when passwordRecovery or emailVerification is enabled
-  tokenService?: TokenService;
-  emailService?: EmailService;
-  userRepository?: IUserRepository;
-  sessionRepository?: ISessionRepository;
   // Optional — provided when Google OAuth is enabled
   oauthService?: OAuthService;
   // Optional — provided when login history is enabled
   loginHistoryService?: LoginHistoryService;
-  loginHistoryRepository?: ILoginHistoryRepository;
 }
 
 /**
@@ -75,11 +64,9 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   // Create middleware
   const requireAuth = createRequireAuth(sessionService, config);
 
-  // Create controller
+  // Create controller — only needs authService + config
   const authController = createAuthController({
     authService,
-    sessionService,
-    loginHistoryRepository: deps.loginHistoryRepository,
     config,
   });
 
@@ -144,18 +131,9 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   // Conditional: Password Recovery
   // -----------------------------------------------------------------------
 
-  if (
-    config.passwordRecovery.enabled &&
-    deps.tokenService &&
-    deps.emailService &&
-    deps.userRepository &&
-    deps.sessionRepository
-  ) {
+  if (config.passwordRecovery.enabled) {
     const passwordController = createPasswordController({
-      tokenService: deps.tokenService,
-      emailService: deps.emailService,
-      userRepository: deps.userRepository,
-      sessionRepository: deps.sessionRepository,
+      authService,
       config,
     });
 
@@ -180,16 +158,9 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
   // Conditional: Email Verification
   // -----------------------------------------------------------------------
 
-  if (
-    config.emailVerification.enabled &&
-    deps.tokenService &&
-    deps.emailService &&
-    deps.userRepository
-  ) {
+  if (config.emailVerification.enabled) {
     const verificationController = createVerificationController({
-      tokenService: deps.tokenService,
-      emailService: deps.emailService,
-      userRepository: deps.userRepository,
+      authService,
       config,
     });
 

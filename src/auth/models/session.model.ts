@@ -7,23 +7,7 @@
 import mongoose, { Schema, Model } from 'mongoose';
 
 import type { SessionDocument } from '../auth.types.js';
-
-// ============================================================================
-// Embedded Device Schema
-// ============================================================================
-
-const deviceSchema = new Schema(
-  {
-    browser: { type: String, required: true },
-    os: { type: String, required: true },
-    type: {
-      type: String,
-      required: true,
-      enum: ['desktop', 'mobile', 'tablet'],
-    },
-  },
-  { _id: false },
-);
+import { deviceSchema } from './device.schema.js';
 
 // ============================================================================
 // Schema Definition

@@ -1,7 +1,8 @@
 // ============================================================================
 // ModularAuth-Kit — Auth Service
-// Core business logic for registration, login, profile management, and
-// password changes. Orchestrates other services and repositories.
+// Core business logic for registration, login, profile management, password
+// changes, password recovery, email verification, and logout.
+// Orchestrates other services — controllers remain thin passthroughs.
 // See dev-docs/architecture/overview.md
 // ============================================================================
 
@@ -15,10 +16,11 @@ import type {
   UserDocument,
 } from '../auth.types.js';
 import type { IUserRepository } from '../repositories/interfaces/user.repository.interface.js';
-import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
 import type { SessionService } from './session.service.js';
 import type { TokenService } from './token.service.js';
 import type { EmailService } from './email.service.js';
+import type { LoginHistoryService } from './login-history.service.js';
+import type { CreateLoginHistoryData } from '../repositories/interfaces/login-history.repository.interface.js';
 import { AuthError } from '../errors/auth-error.js';
 import { ValidationError } from '../errors/validation-error.js';
 import { NotFoundError } from '../errors/not-found-error.js';
@@ -33,7 +35,7 @@ import { auditLog } from '../utils/audit-logger.js';
 interface AuthServiceDeps {
   userRepository: IUserRepository;
   sessionService: SessionService;
-  loginHistoryRepository?: ILoginHistoryRepository;
+  loginHistoryService?: LoginHistoryService;
   tokenService?: TokenService;
   emailService?: EmailService;
 }
@@ -45,14 +47,14 @@ interface AuthServiceDeps {
 export class AuthService {
   private readonly userRepo: IUserRepository;
   private readonly sessionService: SessionService;
-  private readonly loginHistoryRepo?: ILoginHistoryRepository;
+  private readonly loginHistoryService?: LoginHistoryService;
   private readonly tokenService?: TokenService;
   private readonly emailService?: EmailService;
 
   constructor(deps: AuthServiceDeps) {
     this.userRepo = deps.userRepository;
     this.sessionService = deps.sessionService;
-    this.loginHistoryRepo = deps.loginHistoryRepository;
+    this.loginHistoryService = deps.loginHistoryService;
     this.tokenService = deps.tokenService;
     this.emailService = deps.emailService;
   }
@@ -143,16 +145,14 @@ export class AuthService {
     }
 
     // 9. Record login history (if enabled)
-    if (config.loginHistory.enabled && this.loginHistoryRepo) {
-      await this.recordHistory({
-        userId: user._id.toString(),
-        event: LOGIN_EVENTS.LOGIN_SUCCESS,
-        ipAddress: meta.ip,
-        userAgent: meta.userAgent,
-        device: meta.device,
-        success: true,
-      });
-    }
+    await this.recordHistory(config, {
+      userId: user._id.toString(),
+      event: LOGIN_EVENTS.LOGIN_SUCCESS,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+      device: meta.device,
+      success: true,
+    });
 
     auditLog('register', {
       userId: user._id.toString(),
@@ -280,16 +280,14 @@ export class AuthService {
     );
 
     // 9. Record login history
-    if (config.loginHistory.enabled && this.loginHistoryRepo) {
-      await this.recordHistory({
-        userId: user._id.toString(),
-        event: LOGIN_EVENTS.LOGIN_SUCCESS,
-        ipAddress: meta.ip,
-        userAgent: meta.userAgent,
-        device: meta.device,
-        success: true,
-      });
-    }
+    await this.recordHistory(config, {
+      userId: user._id.toString(),
+      event: LOGIN_EVENTS.LOGIN_SUCCESS,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+      device: meta.device,
+      success: true,
+    });
 
     auditLog('login_success', {
       userId: user._id.toString(),
@@ -298,6 +296,62 @@ export class AuthService {
     });
 
     return { user, sessionId };
+  }
+
+  // --------------------------------------------------------------------------
+  // logout
+  // --------------------------------------------------------------------------
+
+  /**
+   * Log out the current session. Revokes the session and records history.
+   */
+  async logout(
+    userId: string,
+    sessionId: string | undefined,
+    meta: RequestMeta,
+    config: AuthConfig,
+  ): Promise<void> {
+    if (sessionId) {
+      await this.sessionService.revokeById(sessionId);
+    }
+
+    await this.recordHistory(config, {
+      userId,
+      event: LOGIN_EVENTS.LOGOUT,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+      device: meta.device,
+      success: true,
+    });
+
+    auditLog('logout', { userId, ip: meta.ip, success: true });
+  }
+
+  // --------------------------------------------------------------------------
+  // logoutAll
+  // --------------------------------------------------------------------------
+
+  /**
+   * Log out all sessions for a user. Revokes all sessions and records history.
+   */
+  async logoutAll(
+    userId: string,
+    meta: RequestMeta,
+    config: AuthConfig,
+  ): Promise<void> {
+    await this.sessionService.revokeAllByUserId(userId);
+
+    await this.recordHistory(config, {
+      userId,
+      event: LOGIN_EVENTS.LOGOUT,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+      device: meta.device,
+      success: true,
+      detail: 'logout_all_devices',
+    });
+
+    auditLog('logout_all', { userId, ip: meta.ip, success: true });
   }
 
   // --------------------------------------------------------------------------
@@ -409,18 +463,211 @@ export class AuthService {
     await this.sessionService.revokeAllByUserId(userId);
 
     // 7. Record in login history
-    if (config.loginHistory.enabled && this.loginHistoryRepo) {
-      await this.recordHistory({
-        userId,
-        event: LOGIN_EVENTS.PASSWORD_CHANGE,
-        ipAddress: meta.ip,
-        userAgent: meta.userAgent,
-        device: meta.device,
+    await this.recordHistory(config, {
+      userId,
+      event: LOGIN_EVENTS.PASSWORD_CHANGE,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+      device: meta.device,
+      success: true,
+    });
+
+    auditLog('password_change', { userId, success: true });
+  }
+
+  // --------------------------------------------------------------------------
+  // forgotPassword
+  // --------------------------------------------------------------------------
+
+  /**
+   * Initiate password reset flow. Generates a token and sends a reset email.
+   * Always succeeds (enumeration protection) — doesn't reveal whether user exists.
+   */
+  async forgotPassword(
+    identifier: string,
+    config: AuthConfig,
+  ): Promise<void> {
+    if (!this.tokenService || !this.emailService) {
+      return;
+    }
+
+    // Find user by email or username
+    let user = await this.userRepo.findByEmail(identifier);
+
+    if (!user && config.passwordRecovery.identifiedBy !== 'email') {
+      user = await this.userRepo.findByUsername(identifier);
+    }
+
+    if (user) {
+      // Generate token and send email
+      const rawToken = await this.tokenService.generatePasswordResetToken(
+        user._id.toString(),
+        config,
+      );
+
+      await this.emailService.sendPasswordReset(user.email, rawToken, config);
+
+      auditLog('forgot_password', {
+        userId: user._id.toString(),
         success: true,
       });
     }
 
-    auditLog('password_change', { userId, success: true });
+    // Always void return — enumeration protection
+  }
+
+  // --------------------------------------------------------------------------
+  // resetPassword
+  // --------------------------------------------------------------------------
+
+  /**
+   * Reset password using a token. Validates token, enforces password policy,
+   * updates the password, and revokes all sessions.
+   */
+  async resetPassword(
+    token: string,
+    newPassword: string,
+    config: AuthConfig,
+    meta: RequestMeta,
+  ): Promise<void> {
+    if (!this.tokenService) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        'Password recovery is not enabled',
+      );
+    }
+
+    // 1. Verify the token
+    const tokenDoc = await this.tokenService.verifyToken(token, 'password_reset');
+
+    // 2. Validate new password against policy
+    const violations = passwordService.validatePolicy(
+      newPassword,
+      config.registration.validation.password,
+    );
+    if (violations.length > 0) {
+      throw new ValidationError(
+        violations.map((msg) => ({ field: 'newPassword', message: msg })),
+      );
+    }
+
+    // 3. Mark token as used FIRST (single-use enforcement)
+    // Prevents replay attacks if the server crashes after password update
+    await this.tokenService.markAsUsed(tokenDoc._id.toString());
+
+    // 4. Hash the new password
+    const hashedPassword = await passwordService.hash(newPassword);
+
+    // 5. Update the user's password
+    await this.userRepo.updatePasswordHash(
+      tokenDoc.userId.toString(),
+      hashedPassword,
+    );
+
+    // 6. Revoke all sessions via SessionService (consistent side effects)
+    await this.sessionService.revokeAllByUserId(tokenDoc.userId.toString());
+
+    // 7. Record in login history
+    await this.recordHistory(config, {
+      userId: tokenDoc.userId.toString(),
+      event: LOGIN_EVENTS.PASSWORD_RESET,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+      device: meta.device,
+      success: true,
+    });
+
+    auditLog('password_reset', {
+      userId: tokenDoc.userId.toString(),
+      success: true,
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // verifyEmail
+  // --------------------------------------------------------------------------
+
+  /**
+   * Verify a user's email using an OTP code.
+   */
+  async verifyEmail(userId: string, code: string): Promise<void> {
+    if (!this.tokenService) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        'Email verification is not enabled',
+      );
+    }
+
+    // 1. Check if already verified
+    const user = await this.userRepo.findById(userId);
+    if (user?.isEmailVerified) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        'Email is already verified',
+      );
+    }
+
+    // 2. Verify the OTP code
+    const tokenDoc = await this.tokenService.verifyToken(code, 'email_verification');
+
+    // 3. Ensure token belongs to this user
+    if (tokenDoc.userId.toString() !== userId) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.TOKEN_INVALID,
+        MESSAGES.TOKEN_INVALID,
+      );
+    }
+
+    // 4. Mark token as used
+    await this.tokenService.markAsUsed(tokenDoc._id.toString());
+
+    // 5. Set isEmailVerified = true
+    await this.userRepo.setEmailVerified(userId);
+
+    auditLog('email_verified', { userId, success: true });
+  }
+
+  // --------------------------------------------------------------------------
+  // resendVerification
+  // --------------------------------------------------------------------------
+
+  /**
+   * Resend the email verification code.
+   */
+  async resendVerification(userId: string, config: AuthConfig): Promise<void> {
+    if (!this.tokenService || !this.emailService) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        'Email verification is not enabled',
+      );
+    }
+
+    // 1. Check if already verified
+    const user = await this.userRepo.findById(userId);
+    if (user?.isEmailVerified) {
+      throw new AuthError(
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR,
+        'Email is already verified',
+      );
+    }
+
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    // 2. Generate new verification code (invalidates old ones)
+    const code = await this.tokenService.generateVerificationCode(userId, config);
+
+    // 3. Send verification email
+    await this.emailService.sendVerification(user.email, code, config);
+
+    auditLog('verification_resent', { userId, success: true });
   }
 
   // --------------------------------------------------------------------------
@@ -460,8 +707,8 @@ export class AuthService {
     meta: RequestMeta,
     config: AuthConfig,
   ): Promise<void> {
-    if (config.loginHistory.enabled && this.loginHistoryRepo && userId) {
-      await this.recordHistory({
+    if (userId) {
+      await this.recordHistory(config, {
         userId,
         event: LOGIN_EVENTS.LOGIN_FAILURE,
         ipAddress: meta.ip,
@@ -481,13 +728,15 @@ export class AuthService {
   }
 
   /**
-   * Record a login history entry.
+   * Record a login history entry via LoginHistoryService.
+   * No-op if login history is disabled or service not available.
    */
   private async recordHistory(
+    config: AuthConfig,
     data: CreateLoginHistoryData,
   ): Promise<void> {
-    if (this.loginHistoryRepo) {
-      await this.loginHistoryRepo.create(data);
+    if (config.loginHistory.enabled && this.loginHistoryService) {
+      await this.loginHistoryService.record(data);
     }
   }
 }

@@ -9,6 +9,8 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 
+import { timingSafeCompare } from '../../utils/crypto.js';
+
 import type { AuthConfig } from '../../auth.types.js';
 import { sendError } from '../../utils/api-response.js';
 import { HTTP_STATUS, ERROR_CODES, MESSAGES } from '../../auth.constants.js';
@@ -21,7 +23,7 @@ export function setupSecurity(config: AuthConfig): RequestHandler[] {
   const middleware: RequestHandler[] = [];
 
   // Cookie parser — always enabled (needed for session cookies)
-  middleware.push(cookieParser());
+  middleware.push(cookieParser(config.session.secret));
 
   // Helmet — security headers
   if (config.security.helmet) {
@@ -65,7 +67,7 @@ function csrfProtection(config: AuthConfig): RequestHandler {
     const cookieToken = req.cookies?.[COOKIE_NAME];
     const headerToken = req.headers[HEADER_NAME] as string | undefined;
 
-    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    if (!cookieToken || !headerToken || !timingSafeCompare(cookieToken, headerToken)) {
       sendError(
         res,
         HTTP_STATUS.FORBIDDEN,

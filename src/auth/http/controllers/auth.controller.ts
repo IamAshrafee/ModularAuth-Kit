@@ -8,13 +8,10 @@
 import type { Request, Response } from 'express';
 
 import type { AuthConfig } from '../../auth.types.js';
-import type { ILoginHistoryRepository, CreateLoginHistoryData } from '../../repositories/interfaces/login-history.repository.interface.js';
 import { AuthService } from '../../services/auth.service.js';
-import { SessionService } from '../../services/session.service.js';
 import { sendSuccess } from '../../utils/api-response.js';
 import { handleError } from '../../utils/api-response.js';
-import { auditLog } from '../../utils/audit-logger.js';
-import { HTTP_STATUS, MESSAGES, LOGIN_EVENTS } from '../../auth.constants.js';
+import { HTTP_STATUS, MESSAGES } from '../../auth.constants.js';
 import {
   getRequestMeta,
   setSessionCookie,
@@ -28,13 +25,11 @@ import {
 
 export interface AuthControllerDeps {
   authService: AuthService;
-  sessionService: SessionService;
-  loginHistoryRepository?: ILoginHistoryRepository;
   config: AuthConfig;
 }
 
 export function createAuthController(deps: AuthControllerDeps) {
-  const { authService, sessionService, loginHistoryRepository, config } = deps;
+  const { authService, config } = deps;
 
   return {
     // -----------------------------------------------------------------------
@@ -78,28 +73,11 @@ export function createAuthController(deps: AuthControllerDeps) {
     async logout(req: Request, res: Response): Promise<void> {
       try {
         const user = getAuthenticatedUser(req);
-        const userId = user._id.toString();
+        const meta = getRequestMeta(req);
 
-        if (req.sessionId) {
-          await sessionService.revokeById(req.sessionId);
-        }
+        await authService.logout(user._id.toString(), req.sessionId, meta, config);
         clearSessionCookie(res, config);
 
-        // Record logout in login history (if enabled)
-        if (config.loginHistory.enabled && loginHistoryRepository) {
-          const meta = getRequestMeta(req);
-          const historyData: CreateLoginHistoryData = {
-            userId,
-            event: LOGIN_EVENTS.LOGOUT,
-            ipAddress: meta.ip,
-            userAgent: meta.userAgent,
-            device: meta.device,
-            success: true,
-          };
-          await loginHistoryRepository.create(historyData);
-        }
-
-        auditLog('logout', { userId, ip: req.ip, success: true });
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.LOGOUT_SUCCESS, null);
       } catch (error) {
         handleError(res, error);
@@ -112,27 +90,11 @@ export function createAuthController(deps: AuthControllerDeps) {
     async logoutAll(req: Request, res: Response): Promise<void> {
       try {
         const user = getAuthenticatedUser(req);
-        const userId = user._id.toString();
+        const meta = getRequestMeta(req);
 
-        await sessionService.revokeAllByUserId(userId);
+        await authService.logoutAll(user._id.toString(), meta, config);
         clearSessionCookie(res, config);
 
-        // Record logout-all in login history (if enabled)
-        if (config.loginHistory.enabled && loginHistoryRepository) {
-          const meta = getRequestMeta(req);
-          const historyData: CreateLoginHistoryData = {
-            userId,
-            event: LOGIN_EVENTS.LOGOUT,
-            ipAddress: meta.ip,
-            userAgent: meta.userAgent,
-            device: meta.device,
-            success: true,
-            detail: 'logout_all_devices',
-          };
-          await loginHistoryRepository.create(historyData);
-        }
-
-        auditLog('logout_all', { userId, ip: req.ip, success: true });
         sendSuccess(res, HTTP_STATUS.OK, MESSAGES.LOGOUT_SUCCESS, null);
       } catch (error) {
         handleError(res, error);

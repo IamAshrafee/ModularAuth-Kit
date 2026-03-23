@@ -300,9 +300,11 @@ function validateConfig(config: AuthConfig): void {
  */
 export function createConfig(userConfig?: DeepPartial<AuthConfig>): Readonly<AuthConfig> {
   // Step 1: Deep merge defaults with developer overrides
+  // Always clone defaultConfig first to prevent mutation of the shared singleton
+  const clonedDefaults = structuredClone(defaultConfig);
   const merged = userConfig
-    ? deepMerge(defaultConfig as unknown as Record<string, unknown>, userConfig as unknown as Record<string, unknown>) as unknown as AuthConfig
-    : { ...structuredClone(defaultConfig) };
+    ? deepMerge(clonedDefaults as unknown as Record<string, unknown>, userConfig as unknown as Record<string, unknown>) as unknown as AuthConfig
+    : clonedDefaults;
 
   // Step 2: Overlay environment variables (secrets always from env)
   applyEnvironmentVariables(merged);

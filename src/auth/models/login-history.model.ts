@@ -7,23 +7,7 @@
 import mongoose, { Schema, Model } from 'mongoose';
 
 import type { LoginHistoryDocument, LoginEvent } from '../auth.types.js';
-
-// ============================================================================
-// Embedded Device Schema
-// ============================================================================
-
-const deviceSchema = new Schema(
-  {
-    browser: { type: String, required: true },
-    os: { type: String, required: true },
-    type: {
-      type: String,
-      required: true,
-      enum: ['desktop', 'mobile', 'tablet'],
-    },
-  },
-  { _id: false },
-);
+import { deviceSchema } from './device.schema.js';
 
 // ============================================================================
 // Schema Definition
@@ -78,8 +62,9 @@ const loginHistorySchema = new Schema<LoginHistoryDocument>({
 
 // Compound index for paginated per-user queries, newest first
 loginHistorySchema.index({ userId: 1, createdAt: -1 });
-// TTL index — auto-delete old entries based on retention period
-loginHistorySchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }); // 90 days default
+// NOTE: No TTL index here. Retention is controlled by config.loginHistory.retentionDays
+// and enforced by LoginHistoryService.cleanup() via a scheduled job. A hardcoded TTL
+// index would ignore the user's config value, silently breaking the contract.
 
 // ============================================================================
 // Model Export
